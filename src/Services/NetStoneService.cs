@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NetStone.Model.Parseables.Character.ClassJob;
 
 namespace NetStoneMCP.Services
 {
@@ -16,6 +17,7 @@ namespace NetStoneMCP.Services
     {
         Task InitializeAsync();
         Task<FreeCompanySearchEntry?> GetFCInformation(string name, string world);
+        Task<CharacterClassJob?> GetCharacterClassJob(string id);
         Task<CharacterSearchEntry?> GetCharacterID(string name, string world);
         Task<IEnumerable<FreeCompanyMembersEntry>?> GetFCMembers(string id);
     }
@@ -73,6 +75,16 @@ namespace NetStoneMCP.Services
             var freeCompanyMembers = searchResponse?.Members;
 
             return freeCompanyMembers;
+        }
+
+        public async Task<CharacterClassJob?> GetCharacterClassJob(string id)
+        {
+            if (_lodestoneClient == null)
+                throw new Exception("LodestoneClient initialization failed.");
+
+            var classJobResponse = await _lodestoneClient.GetCharacterClassJob(id: id);
+
+            return classJobResponse;
         }
     }
 }

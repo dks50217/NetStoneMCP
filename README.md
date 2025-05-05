@@ -6,6 +6,11 @@
 
 This project transforms the powerful, modern `.NET` FFXIV Lodestone API library **NetStone** into a set of Model Context Protocol tools, allowing you to use natural language prompts to query Lodestone data via an MCP-compatible LLM client such as OpenAI or Claude.
 
+## Quick Preview
+
+![sample](./docs/sample.png)
+
+
 ## Features (Planned or Implemented)
 
 ✅ = Implemented  
@@ -26,7 +31,4 @@ This project transforms the powerful, modern `.NET` FFXIV Lodestone API library 
 
 - 🔜 **World List Tool**  
   List all supported FFXIV worlds.
-
-- 🔜 **Gear Snapshot Tool**  
-  Retrieve and describe the equipped gear of a character.
 
