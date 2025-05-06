@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NetStoneClient"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="NetStoneMCP" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <!-- 設定區 -->
@@ -20,10 +20,19 @@
             <StackPanel Name="ChatPanel" Margin="10"/>
         </ScrollViewer>
 
-        <!-- 輸入區 TextBox -->
-        <TextBox Grid.Row="2" Name="InputBox" Height="30" Margin="10"
-         VerticalContentAlignment="Center"
-         HorizontalContentAlignment="Left"
-         KeyDown="InputBox_KeyDown"/>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="700" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            
+            <!-- 輸入區 TextBox -->
+            <TextBox Grid.Column="0" Name="InputBox" Height="30" Margin="10"
+             VerticalContentAlignment="Center"
+             HorizontalContentAlignment="Left"
+             KeyDown="InputBox_KeyDown"/>
+
+            <Button x:Name="SubmitButton" Grid.Column="1" Width="70" Height="32" Cursor="Hand" ToolTip="送出" Content="送出" Click="SubmitButton_Click"/>
+        </Grid>
     </Grid>
 </Window>

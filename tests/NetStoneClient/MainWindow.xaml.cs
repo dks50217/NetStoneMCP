@@ -42,6 +42,8 @@ namespace NetStoneClient
 
         private async Task InitializeMCP()
         {
+            AddUIMessage(ChatRole.System, "🕐 初始化中，請稍候...");
+
             var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
             {
                 Name = "helpTroubleshooter",
@@ -63,66 +65,99 @@ namespace NetStoneClient
 
             _chatClient = new OpenAIClient(_apiKey).GetChatClient(_model).AsIChatClient()
                                 .AsBuilder().UseFunctionInvocation().Build();
+
+            _messages.Add(new(ChatRole.System, "請使用繁體中文回答所有問題。"));
+
+            AddUIMessage(ChatRole.System, "歡迎使用本工具！這是一個結合 NetStone 的自然語言 MCP 伺服器，可用來查詢《Final Fantasy XIV》的角色與世界資料。");
         }
+
+        private void SubmitButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(InputBox.Text))
+            {
+                SubmitMessage();
+            }
+            else
+            {
+                MessageBox.Show("請輸入問題!", "Info");
+            }
+        }
+
+        private async void SubmitMessage()
+        {
+            string userMessage = InputBox.Text.Trim();
+
+            _messages.Add(new(ChatRole.User, userMessage));
+            AddUIMessage(ChatRole.User, userMessage);
+            InputBox.Clear();
+            SubmitButton.IsEnabled = false;
+
+            AddUIMessage(ChatRole.Assistant, "思考中...");
+
+            bool isFirst = true;
+            string aiMessage = string.Empty;
+
+            await foreach (var update in _chatClient.GetStreamingResponseAsync(_messages, new() { Tools = [.. _tools] }))
+            {
+                aiMessage += update.Text;
+
+                if (isFirst)
+                {
+                    ChatPanel.Children.RemoveAt(ChatPanel.Children.Count - 1); // 移除 "思考中..."
+                    AddUIMessage(ChatRole.Assistant, aiMessage);
+                    isFirst = false;
+                }
+                else
+                {
+                    UpdateLastUIMessage(aiMessage);
+                }
+
+                _updates.Add(update);
+            }
+
+            _messages.AddMessages(_updates);
+            ScrollViewer.ScrollToEnd();
+            SubmitButton.IsEnabled = true;
+        }
+
 
         private async void InputBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(InputBox.Text))
             {
-                string userMessage = InputBox.Text.Trim();
-
-                _messages.Add(new(ChatRole.User, userMessage));
-                AddUIMessage("User", userMessage);
-                InputBox.Clear();
-
-                AddUIMessage("AI", "思考中...");
-
-                bool isFirst = true;
-                string aiMessage = string.Empty;
-
-                await foreach (var update in _chatClient.GetStreamingResponseAsync(_messages, new() { Tools = [.. _tools] }))
-                {
-                    aiMessage += update.Text;
-
-                    if (isFirst)
-                    {
-                        ChatPanel.Children.RemoveAt(ChatPanel.Children.Count - 1); // 移除 "思考中..."
-                        AddUIMessage("AI", aiMessage);
-                        isFirst = false;
-                    }
-                    else
-                    {
-                        UpdateLastUIMessage(aiMessage);
-                    }
-
-                    _updates.Add(update);
-                }
-
-                _messages.AddMessages(_updates);
-                ScrollViewer.ScrollToEnd();
+                SubmitMessage();
             }
         }
 
         private void UpdateLastUIMessage(string newText)
         {
             if (ChatPanel.Children.Count > 0 &&
-                ChatPanel.Children[^1] is TextBlock lastBlock)
+        ChatPanel.Children[^1] is Border lastBubble &&
+        lastBubble.Child is TextBlock textBlock)
             {
-                lastBlock.Text = $"AI: {newText}";
+                textBlock.Text = newText;
             }
         }
 
-        private void AddUIMessage(string sender, string message, bool isLast = false)
+        private void AddUIMessage(ChatRole sender, string message, bool isLast = false)
         {
-            var textBlock = new TextBlock
+            var bubble = new Border
             {
-                Text = $"{sender}: {message}",
-                TextWrapping = TextWrapping.Wrap,
+                Background = sender == ChatRole.User ? Brushes.LightBlue : Brushes.LightGray,
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(10),
                 Margin = new Thickness(5),
-                FontSize = 14
+                MaxWidth = 300,
+                HorizontalAlignment = sender == ChatRole.User ? HorizontalAlignment.Right : HorizontalAlignment.Left,
+                Child = new TextBlock
+                {
+                    Text = message,
+                    TextWrapping = TextWrapping.Wrap,
+                    FontSize = 14
+                }
             };
 
-            ChatPanel.Children.Add(textBlock);
+            ChatPanel.Children.Add(bubble);
         }
     }
 }
