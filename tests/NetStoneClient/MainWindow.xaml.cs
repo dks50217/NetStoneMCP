@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.AI;
+﻿using MdXaml;
+using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Transport;
 using ModelContextProtocol.Protocol.Types;
@@ -67,6 +68,8 @@ namespace NetStoneClient
                                 .AsBuilder().UseFunctionInvocation().Build();
 
             _messages.Add(new(ChatRole.System, "請使用繁體中文回答所有問題。"));
+            _messages.Add(new(ChatRole.System, "公司是指公會。"));
+            _messages.Add(new(ChatRole.System, "Link shell是指通訊貝。"));
 
             AddUIMessage(ChatRole.System, "歡迎使用本工具！這是一個結合 NetStone 的自然語言 MCP 伺服器，可用來查詢《Final Fantasy XIV》的角色與世界資料。");
         }
@@ -133,28 +136,33 @@ namespace NetStoneClient
         {
             if (ChatPanel.Children.Count > 0 &&
         ChatPanel.Children[^1] is Border lastBubble &&
-        lastBubble.Child is TextBlock textBlock)
+        lastBubble.Child is MarkdownScrollViewer viewer)
             {
-                textBlock.Text = newText;
+                viewer.Markdown = newText;
             }
         }
 
         private void AddUIMessage(ChatRole sender, string message, bool isLast = false)
         {
+            var viewer = new MarkdownScrollViewer
+            {
+                Markdown = message,
+                Margin = new Thickness(0),
+                Background = Brushes.Transparent,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                IsHitTestVisible = true
+            };
+
             var bubble = new Border
             {
                 Background = sender == ChatRole.User ? Brushes.LightBlue : Brushes.LightGray,
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(10),
                 Margin = new Thickness(5),
-                MaxWidth = 300,
+                MaxWidth = 400,
                 HorizontalAlignment = sender == ChatRole.User ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                Child = new TextBlock
-                {
-                    Text = message,
-                    TextWrapping = TextWrapping.Wrap,
-                    FontSize = 14
-                }
+                Child = viewer
             };
 
             ChatPanel.Children.Add(bubble);
