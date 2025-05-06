@@ -8,8 +8,11 @@ This project transforms the powerful, modern `.NET` FFXIV Lodestone API library 
 
 ## Quick Preview
 
+* Console
 ![sample](./docs/sample.png)
 
+* WPF
+![sample2](./docs/sample2.png)
 
 ## Features (Planned or Implemented)
 
