@@ -20,7 +20,11 @@ This project transforms the powerful, modern `.NET` FFXIV Lodestone API library 
 
 <br>
 
-![sample2](./docs/sample3.png)
+![sample3](./docs/sample3.png)
+
+<br>
+
+![sample4](./docs/sample4.png)
 
 ## Features (Planned or Implemented)
 
