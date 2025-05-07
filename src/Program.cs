@@ -16,6 +16,8 @@ builder.Services
     .WithToolsFromAssembly();
 
 builder.Services.AddSingleton<INetStoneService, NetStoneService>();
+builder.Services.AddHttpClient<ICommonService, CommonService>();
+builder.Services.AddHttpClient<IPaissaHouseService, PaissaHouseService>();
 
 static async Task InitNetStone(IHost host)
 {

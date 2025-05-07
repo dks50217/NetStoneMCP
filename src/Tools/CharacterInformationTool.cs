@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using ModelContextProtocol.Server;
 using NetStone.Model.Parseables.Character;
 using NetStone.Model.Parseables.Character.ClassJob;
+using NetStone.Model.Parseables.CWLS;
 using NetStoneMCP.Dict;
 using NetStoneMCP.Model;
 using NetStoneMCP.Services;
@@ -23,9 +25,9 @@ namespace NetStoneMCP.Tools
         [McpServerTool(Name = "get_player_info", Title = "Get a character information")]
         [Description("Get a character by its Lodestone ID.")]
         public async Task<CharacterDto?> GetCharacterInformation(
-      [Description("The character name.")] string name,
-      [Description("The data center (world).")] string world
-  )
+          [Description("The character name.")] string name,
+          [Description("The data center (world).")] string world
+      )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
 
@@ -52,9 +54,9 @@ namespace NetStoneMCP.Tools
         }
 
         public async Task<LodestoneCharacter?> GetCharacterRace(
-   [Description("The character name.")] string name,
-   [Description("The data center (world).")] string world
-)
+       [Description("The character name.")] string name,
+       [Description("The data center (world).")] string world
+    )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
 
@@ -84,6 +86,29 @@ namespace NetStoneMCP.Tools
             var classJob = await _netStoneService.GetCharacterClassJob(character.Id);
 
             return classJob;
+        }
+
+        [McpServerTool(Name = "get_character_mount_count", Title = "Get character mount count")]
+        [Description("Get character mount count")]
+        public async Task<CharacterMountDto?> GetCharacterMountCount(
+        [Description("The character name.")] string name,
+        [Description("The data center (world).")] string world
+    )
+        {
+            var character = await _netStoneService.GetCharacterId(name, world);
+
+            if (character is null) return null;
+
+            if (string.IsNullOrEmpty(character.Id)) return null;
+
+            var mountInfo = await _netStoneService.GetCharacterMount(character.Id);
+
+            if (mountInfo is null) return null;
+
+            return new CharacterMountDto()
+            {
+                Count = mountInfo.Collectables.Count()
+            };
         }
     }
 }

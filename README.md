@@ -7,11 +7,17 @@
 This project transforms the powerful, modern `.NET` FFXIV Lodestone API library **NetStone** into a set of Model Context Protocol tools, allowing you to use natural language prompts to query Lodestone data via an MCP-compatible LLM client such as OpenAI or Claude.
 
 
-## Quick Preview
+## Data Source
+
+* [NetStone](https://github.com/xivapi/NetStone)
+* [FFXIV_PaissaHouse](https://github.com/zhudotexe/FFXIV_PaissaHouse)
+* [FFXIVStore](https://store.finalfantasyxiv.com/ffxivstore/en-us/)
+
+## Setup
 
 * Claude Desktop
 
-`claude_desktop_config.json`
+add mcpServers in `claude_desktop_config.json`
 
 ```json
 {
@@ -29,6 +35,14 @@ This project transforms the powerful, modern `.NET` FFXIV Lodestone API library 
   }
 }
 ```
+
+* WPF
+
+```shell
+dotnet run --project tests\NetStoneClient\NetStoneClient.csproj
+```
+
+## Sample
 
 ![sample5](./docs/sample5.png)
 
@@ -52,24 +66,35 @@ This project transforms the powerful, modern `.NET` FFXIV Lodestone API library 
 
 ![sample4](./docs/sample4.png)
 
+<br>
+
+![sample5](./docs/sample6.png)
+
+
 ## Features (Planned or Implemented)
 
 ✅ = Implemented  
 🛠️ = In Progress  
 🔜 = Planned
 
-- 🔜 **Character Search Tool**  
+- ✅ **Character Search Tool**  
   Search for FFXIV characters by name and world.
 
-- 🔜 **Character Profile Tool**  
+- ✅ **Character Profile Tool**  
   Fetch detailed character profiles (job levels, biography, etc).
 
-- 🔜 **Free Company Search Tool**  
+- ✅ **Free Company Search Tool**  
   Search for Free Companies by name and server.
 
-- 🔜 **Free Company Profile Tool**  
+- ✅ **Free Company Profile Tool**  
   Retrieve members, activities, and rank data.
 
-- 🔜 **World List Tool**  
+- ✅ **World List Tool**  
   List all supported FFXIV worlds.
+
+- ✅ **House List Tool**  
+  List all purchasable houses.
+
+- 🔜 **Store List Tool** 
+  TBD
 

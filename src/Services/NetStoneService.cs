@@ -15,6 +15,9 @@ using NetStone.Model.Parseables.CWLS;
 using System.Xml.Linq;
 using NetStone.Search.Linkshell;
 using NetStone.Model.Parseables.Search.CWLS;
+using NetStone.Model.Parseables.Search.Linkshell;
+using NetStone.Model.Parseables.Linkshell;
+using NetStone.Model.Parseables.Character.Collectable;
 
 namespace NetStoneMCP.Services
 {
@@ -28,6 +31,9 @@ namespace NetStoneMCP.Services
         Task<IEnumerable<FreeCompanyMembersEntry>?> GetFCMembers(string id);
         Task<CrossworldLinkshellSearchEntry?> GetCrossworldLinkshellId(string name, string world);
         Task<LodestoneCrossworldLinkshell?> GetCrossworldLinkshell(string id);
+        Task<LinkshellSearchEntry?> GetLinkshellId(string name, string world);
+        Task<LodestoneLinkshell?> GetLinkshell(string id);
+        Task<CharacterCollectable?> GetCharacterMount(string id);
     }
 
     public class NetStoneService : INetStoneService
@@ -132,6 +138,44 @@ namespace NetStoneMCP.Services
                 throw new Exception("LodestoneClient initialization failed.");
 
             var result = await _lodestoneClient.GetCrossworldLinkshell(id: id);
+
+            return result;
+        }
+
+        public async Task<LinkshellSearchEntry?> GetLinkshellId(string name, string world)
+        {
+            if (_lodestoneClient == null)
+                throw new Exception("LodestoneClient initialization failed.");
+
+            var searchResponse = await _lodestoneClient.SearchLinkshell(new LinkshellSearchQuery()
+            {
+                DataCenter = world,
+                Name = name
+            });
+
+            var linkshell =
+               searchResponse?.Results
+               .FirstOrDefault(entry => entry.Name == name);
+
+            return linkshell;
+        }
+
+        public async Task<LodestoneLinkshell?> GetLinkshell(string id)
+        {
+            if (_lodestoneClient == null)
+                throw new Exception("LodestoneClient initialization failed.");
+
+            var result = await _lodestoneClient.GetLinkshell(id: id);
+
+            return result;
+        }
+
+        public async Task<CharacterCollectable?> GetCharacterMount(string id)
+        {
+            if (_lodestoneClient == null)
+                throw new Exception("LodestoneClient initialization failed.");
+
+            var result = await _lodestoneClient.GetCharacterMount(id);
 
             return result;
         }

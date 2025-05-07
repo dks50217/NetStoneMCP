@@ -14,10 +14,10 @@ using System.Threading.Tasks;
 namespace NetStoneMCP.Tools
 {
     [McpServerToolType]
-    public class FreeCompanyTool(INetStoneService netStone, ILogger<CharacterInformationTool> logger)
+    public class FreeCompanyTool(INetStoneService netStone, ILogger<FreeCompanyTool> logger)
     {
         private readonly INetStoneService _netStoneService = netStone;
-        private readonly ILogger<CharacterInformationTool> _logger = logger;
+        private readonly ILogger<FreeCompanyTool> _logger = logger;
 
         [McpServerTool(Name = "get_fc_information", Title = "Get fc information")]
         [Description("Get free Company information")]

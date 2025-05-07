@@ -47,7 +47,7 @@ namespace NetStoneClient
 
             var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
             {
-                Name = "helpTroubleshooter",
+                Name = "NetStoneMCP",
                 Command = "dotnet",
                 Arguments = ["run", "--project", "../../../../../src/NetStoneMCP.csproj", "--no-build"],
             });
@@ -124,7 +124,7 @@ namespace NetStoneClient
         }
 
 
-        private async void InputBox_KeyDown(object sender, KeyEventArgs e)
+        private void InputBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(InputBox.Text))
             {
