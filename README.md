@@ -6,9 +6,35 @@
 
 This project transforms the powerful, modern `.NET` FFXIV Lodestone API library **NetStone** into a set of Model Context Protocol tools, allowing you to use natural language prompts to query Lodestone data via an MCP-compatible LLM client such as OpenAI or Claude.
 
+
 ## Quick Preview
 
-* Console
+* Claude Desktop
+
+`claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "NetStone MCP Server" :{
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        // NetStoneMCP.csproj path ex:
+        "C:\\Users\\Desktop\\NetStoneMCP\\src\\NetStoneMCP.csproj",
+        "--no-build"
+      ]
+    }
+  }
+}
+```
+
+![sample5](./docs/sample5.png)
+
+<br>
+
+* Custom Console
 
 <br>
 
@@ -16,7 +42,7 @@ This project transforms the powerful, modern `.NET` FFXIV Lodestone API library 
 
 <br>
 
-* WPF
+* Custom WPF
 
 <br>
 

@@ -36,7 +36,10 @@ namespace NetStoneMCP.Services
 
         public async Task InitializeAsync()
         {
-            _lodestoneClient = await LodestoneClient.GetClientAsync();
+            if (_lodestoneClient is null)
+            {
+                _lodestoneClient = await LodestoneClient.GetClientAsync();
+            }
         }
 
         public async Task<CharacterSearchEntry?> GetCharacterId(string name, string world)
