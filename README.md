@@ -75,7 +75,7 @@ I hope ChatGPT Desktop will support adding MCP soon.
 
 <br>
 
-![sample5](./docs/sample6.png)
+![sample6](./docs/sample6.png)
 
 
 ## Features (Planned or Implemented)
