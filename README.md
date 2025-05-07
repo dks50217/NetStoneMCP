@@ -36,13 +36,20 @@ add mcpServers in `claude_desktop_config.json`
 }
 ```
 
-* WPF
+* Custom WPF
 
 ```shell
+export OPENAI_API_KEY=your_api_key_here
 dotnet run --project tests\NetStoneClient\NetStoneClient.csproj
 ```
 
+* ChatGPT Desktop
+
+I hope ChatGPT Desktop will support adding MCP soon.
+
 ## Sample
+
+* Claude Desktop
 
 ![sample5](./docs/sample5.png)
 
