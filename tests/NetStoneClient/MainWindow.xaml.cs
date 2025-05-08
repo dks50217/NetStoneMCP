@@ -28,8 +28,6 @@ namespace NetStoneClient
         private IChatClient _chatClient;
         private List<Microsoft.Extensions.AI.ChatMessage> _messages = new List<Microsoft.Extensions.AI.ChatMessage>();
         private IList<McpClientTool> _tools;
-        private List<ChatResponseUpdate> _updates = [];
-
         public MainWindow()
         {
             InitializeComponent();
@@ -114,11 +112,9 @@ namespace NetStoneClient
                 {
                     UpdateLastUIMessage(aiMessage);
                 }
-
-                _updates.Add(update);
             }
 
-            _messages.AddMessages(_updates);
+            _messages.Add(new(ChatRole.Assistant, aiMessage));
             ScrollViewer.ScrollToEnd();
             SubmitButton.IsEnabled = true;
         }
