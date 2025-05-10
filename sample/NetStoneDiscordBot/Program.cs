@@ -67,13 +67,19 @@ client.MessageReceived += async message =>
     if (message.Author.Id == client.CurrentUser.Id)
         return;
 
+    var mentioned = message.MentionedUsers.Any(u => u.Id == client.CurrentUser.Id);
+
+    if (mentioned == false)
+    {
+        return;
+    }
+
     var responseMessage = new StringBuilder();
 
-    if (!message.Content.StartsWith("!mcp")) return;
-
-    string content = message.Content.StartsWith("!mcp")
-    ? message.Content.Substring("!mcp".Length).Trim()
-    : message.Content.Trim();
+    string content = message.Content
+        .Replace($"<@{client.CurrentUser.Id}>", "")
+        .Replace($"<@!{client.CurrentUser.Id}>", "")
+        .Trim();
 
     messages.Add(new(ChatRole.User, content));
 

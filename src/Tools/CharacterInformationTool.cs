@@ -26,7 +26,7 @@ namespace NetStoneMCP.Tools
         [Description("Get a character by its Lodestone ID.")]
         public async Task<CharacterDto?> GetCharacterInformation(
           [Description("The character name.")] string name,
-          [Description("The data center (world).")] string world
+          [Description("The data center (world).")] string? world
       )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
@@ -55,7 +55,7 @@ namespace NetStoneMCP.Tools
 
         public async Task<LodestoneCharacter?> GetCharacterRace(
        [Description("The character name.")] string name,
-       [Description("The data center (world).")] string world
+       [Description("The data center (world).")] string? world
     )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
@@ -74,7 +74,7 @@ namespace NetStoneMCP.Tools
         [Description("Get a characters' classjob information by its Lodestone ID")]
         public async Task<CharacterClassJob?> GetCharacterClassJob(
         [Description("The character name.")] string name,
-        [Description("The data center (world).")] string world
+        [Description("The data center (world).")] string? world
     )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
@@ -92,7 +92,7 @@ namespace NetStoneMCP.Tools
         [Description("Get character mount count")]
         public async Task<CharacterMountDto?> GetCharacterMountCount(
         [Description("The character name.")] string name,
-        [Description("The data center (world).")] string world
+        [Description("The data center (world).")] string? world
     )
         {
             var character = await _netStoneService.GetCharacterId(name, world);

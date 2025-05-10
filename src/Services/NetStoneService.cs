@@ -27,7 +27,7 @@ namespace NetStoneMCP.Services
         Task<LodestoneCharacter?> GetCharacterInfo(string id);
         Task<FreeCompanySearchEntry?> GetFCInformation(string name, string world);
         Task<CharacterClassJob?> GetCharacterClassJob(string id);
-        Task<CharacterSearchEntry?> GetCharacterId(string name, string world);
+        Task<CharacterSearchEntry?> GetCharacterId(string name, string? world);
         Task<IEnumerable<FreeCompanyMembersEntry>?> GetFCMembers(string id);
         Task<CrossworldLinkshellSearchEntry?> GetCrossworldLinkshellId(string name, string world);
         Task<LodestoneCrossworldLinkshell?> GetCrossworldLinkshell(string id);
@@ -48,7 +48,7 @@ namespace NetStoneMCP.Services
             }
         }
 
-        public async Task<CharacterSearchEntry?> GetCharacterId(string name, string world)
+        public async Task<CharacterSearchEntry?> GetCharacterId(string name, string? world)
         {
             if (_lodestoneClient == null)
                 throw new Exception("LodestoneClient initialization failed.");
@@ -56,7 +56,7 @@ namespace NetStoneMCP.Services
             var searchResponse = await _lodestoneClient.SearchCharacter(new CharacterSearchQuery()
             {
                 CharacterName = name,
-                World = world
+                World = world ?? string.Empty
             });
 
             var lodestoneCharacter =
