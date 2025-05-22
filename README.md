@@ -43,30 +43,14 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
 
 ![sample4](./docs/sample4.png)
 
-## Features (Planned or Implemented)
+## Features
 
-✅ = Implemented  
-🛠️ = In Progress  
-🔜 = Planned
-
-- ✅ **Character Search Tool**  
-  Search for FFXIV characters by name and world.
-
-- ✅ **Character Profile Tool**  
-  Fetch detailed character profiles (job levels, biography, etc).
-
-- ✅ **Free Company Search Tool**  
-  Search for Free Companies by name and server.
-
-- ✅ **Free Company Profile Tool**  
-  Retrieve members, activities, and rank data.
-
-- ✅ **World List Tool**  
-  List all supported FFXIV worlds.
-
-- ✅ **House List Tool**  
-  List all purchasable houses.
-
-- 🔜 **Store List Tool** 
-  TBD
+- [x] Character search — Search for FFXIV characters by name and world.
+- [x] Character profile details — Fetch detailed character profiles.
+- [x] Free Company search — Search for Free Companies by name and server.
+- [x] Free Company profile details — Retrieve Free Company members and data.
+- [x] World list — List all supported FFXIV worlds.
+- [x] House list — List all purchasable houses.
+- [x] Store list — List store categories. 
+- [x] search for products by specifying a category name.
 

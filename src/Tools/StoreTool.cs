@@ -39,5 +39,12 @@ namespace NetStoneMCP.Tools
         {
             return await _storeService.GetStoreOnSaleItem();
         }
+
+        [McpServerTool(Name = "get_store_product", Title = "Get FFXIV store product by category name")]
+        [Description("Get FFXIV store on product by category name")]
+        public async Task<StoreProductDto?> GetStoreProduct(string name)
+        {
+            return await _storeService.GetStoreProduct(name);
+        }
     }
 }
