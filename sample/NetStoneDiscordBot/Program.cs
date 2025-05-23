@@ -17,13 +17,30 @@ string model = "gpt-4o-mini";
 IChatClient chatClient;
 var messages = new List<Microsoft.Extensions.AI.ChatMessage>();
 IList<McpClientTool> tools;
+IClientTransport clientTransport;
 
-var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
+
+var transportType = Environment.GetEnvironmentVariable("TRANSPORT_TYPE") ?? "Stdio";
+
+if (transportType == "Stdio")
 {
-    Name = "NetStoneMCP",
-    Command = "dotnet",
-    Arguments = ["run", "--project", "../../../../../src/NetStoneMCP.csproj", "--no-build"],
-});
+    clientTransport = new StdioClientTransport(new StdioClientTransportOptions
+    {
+        Name = "NetStoneMCP",
+        Command = "dotnet",
+        Arguments = ["run", "--project", "../../../../../src/NetStoneMCP.csproj", "--no-build"],
+    });
+}
+else
+{
+    var sseUrl = new Uri("http://localhost:5000/sse");
+
+    clientTransport = new SseClientTransport(new SseClientTransportOptions
+    {
+        Name = "NetStoneMCP",
+        Endpoint = sseUrl
+    });
+}
 
 var mcpClient = await McpClientFactory.CreateAsync(clientTransport);
 
