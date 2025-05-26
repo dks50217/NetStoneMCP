@@ -1,5 +1,7 @@
 # NetStone.MCP
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dks50217/NetStoneMCP)
+
 🧩 MCP Toolset for FFXIV Lodestone — Integrates [NetStone](https://github.com/xivapi/NetStone) into a natural-language-capable MCP server for querying character and world data from Final Fantasy XIV.
 
 ## Overview
