@@ -1,0 +1,16 @@
+.git
+.gitignore
+
+bin/
+obj/
+*.log
+*.tmp
+
+docker-compose.yml
+Dockerfile.*
+
+**/bin/
+**/obj/
+.vs/
+*.user
+*.suo

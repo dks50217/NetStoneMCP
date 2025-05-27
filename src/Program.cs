@@ -36,6 +36,7 @@ builder.Services.AddSingleton<INetStoneService, NetStoneService>();
 builder.Services.AddHttpClient<ICommonService, CommonService>();
 builder.Services.AddHttpClient<IPaissaHouseService, PaissaHouseService>();
 builder.Services.AddHttpClient<IStoreService, StoreService>();
+builder.Services.AddHttpClient<IXIVAPIService, XIVAPIService>();
 
 static async Task InitNetStone(IHost host)
 {
@@ -47,7 +48,10 @@ var app = builder.Build();
 
 await InitNetStone(app);
 
-app.MapMcp();
+if (transportType == "SSE")
+{
+    app.MapMcp();
+}
 
 await app.RunAsync();
 

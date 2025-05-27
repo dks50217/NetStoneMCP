@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  netstone-mcp:
+    image: netstone-mcp
+    container_name: netstone-mcp-discord
+    ports:
+      - "12345:80"
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DISCORD_BOT_KEY=${DISCORD_BOT_KEY}
+      - TransportType=SSE
+      - TRANSPORT_TYPE=SSE

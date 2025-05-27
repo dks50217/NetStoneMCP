@@ -54,3 +54,29 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
 - [x] Store list — List store categories. 
 - [x] search for products by specifying a category name.
 
+## Quick Setup - Docker for Discord Bot
+
+1. Create a `.env` file in the project root and add your keys:
+
+    ```env
+    OPENAI_API_KEY=your_openai_api_key
+    DISCORD_BOT_KEY=your_discord_bot_token
+    ```
+
+2. Build the Docker image:
+
+    ```sh
+    docker build -f ./dockerfile -t netstone-mcp .
+    ```
+
+3. Start the container with Docker Compose
+
+    ```sh
+    docker compose up -d
+    ```
+
+> Make sure the `.env` file is in the same directory as your `docker-compose.yml`.
+
+
+
+
