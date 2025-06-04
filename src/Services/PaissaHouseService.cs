@@ -49,12 +49,12 @@ namespace NetStoneMCP.Services
                 .SelectMany(district =>
                     district.open_plots.Select(plot =>
                     {
-                        plot.ward_number++;
-                        plot.plot_number++;
+                        var wardNumber = plot.ward_number + 1;
+                        var plotNumber = plot.plot_number + 1;
 
                         return new PaissaHouseDto
                         {
-                            Area = $"{plot.ward_number}-{plot.plot_number}",
+                            Area = $"{wardNumber}-{plotNumber}",
                             Type = GetPurchaseTypeLabel(plot.purchase_system),
                             Size = FFXIVHouseDict.SizeDict.GetValueOrDefault(plot.size, "Unknown"),
                             Price = plot.price.ToString("N0"),
