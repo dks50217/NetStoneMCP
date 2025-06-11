@@ -29,6 +29,7 @@ namespace NetStoneMCP.Services
     public class NoteService : INoteService
     {
         private readonly string _filePath = "user_notes.json";
+        private const int MaxNoteLength = 512;
         private readonly object _lock = new();
 
         public NoteService()
@@ -39,6 +40,12 @@ namespace NetStoneMCP.Services
 
         public async Task AddNoteAsync(string userInput)
         {
+            if (string.IsNullOrWhiteSpace(userInput))
+                throw new ArgumentException("Content must not be empty.");
+
+            if (userInput.Length > MaxNoteLength)
+                throw new ArgumentException($"Note content must not exceed {MaxNoteLength} characters.");
+
             var notes = await ReadNotesAsync();
 
             notes.Add(new NoteDto
