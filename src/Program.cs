@@ -37,6 +37,7 @@ builder.Services.AddHttpClient<ICommonService, CommonService>();
 builder.Services.AddHttpClient<IPaissaHouseService, PaissaHouseService>();
 builder.Services.AddHttpClient<IStoreService, StoreService>();
 builder.Services.AddHttpClient<IXIVAPIService, XIVAPIService>();
+builder.Services.AddScoped<INoteService, NoteService>();
 
 static async Task InitNetStone(IHost host)
 {
