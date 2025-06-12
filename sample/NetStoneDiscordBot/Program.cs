@@ -91,12 +91,23 @@ client.MessageReceived += async message =>
         return;
     }
 
+    var imageString = string.Empty;
+
     var responseMessage = new StringBuilder();
 
     string content = message.Content
         .Replace($"<@{client.CurrentUser.Id}>", "")
         .Replace($"<@!{client.CurrentUser.Id}>", "")
         .Trim();
+
+    var imageUrls = message.Attachments
+       .Where(a => a.ContentType?.StartsWith("image/") == true)
+       .Select(a => a.Url);
+
+    if (imageUrls.Any())
+    {
+        content += "\n\nImage Url：\n" + string.Join("\n", imageUrls);
+    }
 
     messages.Add(new(ChatRole.User, content));
 

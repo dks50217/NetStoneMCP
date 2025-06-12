@@ -32,5 +32,20 @@ namespace NetStoneMCP.Tools
         {
             return await _noteService.SearchNotesAsync(keyword);
         }
+
+        [McpServerTool(Name = "search_latest_note", Title = "Search latest note by keyword")]
+        [Description("根據關鍵字搜尋最接近現在的一筆筆記")]
+        public async Task<NoteDto?> SearchLatestNote([FromBody] string keyword)
+        {
+            var notes = await _noteService.SearchNotesAsync(keyword);
+            return notes.OrderByDescending(n => n.Timestamp).FirstOrDefault();
+        }
+
+        [McpServerTool(Name = "delete_note", Title = "delete note by keyword")]
+        [Description("根據Id刪除指定的筆記")]
+        public async Task<bool> DeleteNote([FromBody] string Id)
+        {
+            return await _noteService.DeleteNoteAsync(Id);
+        }
     }
 }

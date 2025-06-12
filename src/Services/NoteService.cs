@@ -23,6 +23,7 @@ namespace NetStoneMCP.Services
         public Task AddNoteAsync(string userInput);
         public Task<List<NoteDto>> GetAllNotesAsync();
         public Task<List<NoteDto>> SearchNotesAsync(string keyword);
+        public Task<bool> DeleteNoteAsync(string Id);
     }
 
 
@@ -67,6 +68,20 @@ namespace NetStoneMCP.Services
         {
             var notes = await ReadNotesAsync();
             return notes.Where(n => n.Content.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        public async Task<bool> DeleteNoteAsync(string Id)
+        {
+            var notes = await ReadNotesAsync();
+
+            var noteToRemove = notes.FirstOrDefault(n => n.Id == Id);
+
+            if (noteToRemove == null)
+                return false;
+
+            notes.Remove(noteToRemove);
+            await SaveNotesAsync(notes);
+            return true;
         }
 
         private async Task<List<NoteDto>> ReadNotesAsync()
