@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStoneClient", "..\sample
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStoneDiscordBot", "..\sample\NetStoneDiscordBot\NetStoneDiscordBot.csproj", "{D23E5D83-6105-430B-909B-81DC2F0D6E54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetStoneMCP.Tests", "..\tests\NetStoneMCP.Tests\NetStoneMCP.Tests.csproj", "{56AA581C-E890-4AF6-A9C6-9E6EB52C37DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +25,15 @@ Global
 		{69AB5F17-546E-416A-94FE-EC98A5302327}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69AB5F17-546E-416A-94FE-EC98A5302327}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69AB5F17-546E-416A-94FE-EC98A5302327}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D23E5D83-6105-430B-909B-81DC2F0D6E54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D23E5D83-6105-430B-909B-81DC2F0D6E54}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D23E5D83-6105-430B-909B-81DC2F0D6E54}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D23E5D83-6105-430B-909B-81DC2F0D6E54}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
+                {D23E5D83-6105-430B-909B-81DC2F0D6E54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {D23E5D83-6105-430B-909B-81DC2F0D6E54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {D23E5D83-6105-430B-909B-81DC2F0D6E54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {D23E5D83-6105-430B-909B-81DC2F0D6E54}.Release|Any CPU.Build.0 = Release|Any CPU
+                {56AA581C-E890-4AF6-A9C6-9E6EB52C37DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {56AA581C-E890-4AF6-A9C6-9E6EB52C37DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {56AA581C-E890-4AF6-A9C6-9E6EB52C37DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {56AA581C-E890-4AF6-A9C6-9E6EB52C37DD}.Release|Any CPU.Build.0 = Release|Any CPU
+        EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
