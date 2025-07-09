@@ -41,7 +41,7 @@ namespace NetStoneMCP.Tools
             return notes.OrderByDescending(n => n.Timestamp).FirstOrDefault();
         }
 
-        [McpServerTool(Name = "delete_note", Title = "delete note by keyword")]
+        [McpServerTool(Name = "delete_note", Title = "delete note by Id")]
         [Description("根據Id刪除指定的筆記")]
         public async Task<bool> DeleteNote([FromBody] string Id)
         {

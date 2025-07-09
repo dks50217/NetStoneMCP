@@ -2,7 +2,9 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dks50217/NetStoneMCP)
 
-🧩 MCP Toolset for FFXIV Lodestone — Integrates [NetStone](https://github.com/xivapi/NetStone) into a natural-language-capable MCP server for querying character and world data from Final Fantasy XIV.
+MCP Toolset for FFXIV Lodestone — Integrates [NetStone](https://github.com/xivapi/NetStone) into a natural-language-capable MCP server for querying character and world data from Final Fantasy XIV.
+
+![Not By AI](./docs/Produced-By-Human-Not-By-AI-Badge-white.png)
 
 ## Overview
 
@@ -79,7 +81,6 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
     ```
 
 > Make sure the `.env` file is in the same directory as your `docker-compose.yml`.
-
 
 
 
