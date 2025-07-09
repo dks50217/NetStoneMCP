@@ -4,7 +4,7 @@
 
 MCP Toolset for FFXIV Lodestone — Integrates [NetStone](https://github.com/xivapi/NetStone) into a natural-language-capable MCP server for querying character and world data from Final Fantasy XIV.
 
-![Not By AI](./docs/Produced-By-Human-Not-By-AI-Badge-white.png)
+![[Not By AI](https://notbyai.fyi/hi/not-by-ai/)](./docs/Produced-By-Human-Not-By-AI-Badge-white.png)
 
 ## Overview
 
