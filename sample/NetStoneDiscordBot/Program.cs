@@ -7,6 +7,7 @@ using ModelContextProtocol.Protocol.Transport;
 using ModelContextProtocol.Protocol.Types;
 using OpenAI;
 using OpenAI.Chat;
+using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 
@@ -16,6 +17,7 @@ string model = "gpt-4o-mini";
 
 IChatClient chatClient;
 var messages = new List<Microsoft.Extensions.AI.ChatMessage>();
+
 IList<McpClientTool> tools;
 IClientTransport clientTransport;
 
@@ -52,16 +54,18 @@ botKey = Environment.GetEnvironmentVariable("DISCORD_BOT_KEY") ?? string.Empty;
 chatClient = new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient()
                     .AsBuilder().UseFunctionInvocation().Build();
 
-// 每 5 分鐘清空一次 messages
+// 每 30 分鐘清空一次 messages
 _ = Task.Run(async () =>
 {
     while (true)
     {
-        await Task.Delay(TimeSpan.FromMinutes(5));
+        await Task.Delay(TimeSpan.FromMinutes(30));
         messages.Clear();
         messages.Add(new(ChatRole.System, "請使用繁體中文回答所有問題。"));
         messages.Add(new(ChatRole.System, "公司是指公會。"));
         messages.Add(new(ChatRole.System, "Link shell是指通訊貝。"));
+        messages.Add(new(ChatRole.System, "有提到漢化不要調用商店工具。"));
+        messages.Add(new(ChatRole.System, "中文化代表漢化。"));
         Console.WriteLine("[Info] 已清空 messages 並重新加入 system 指令");
     }
 });
@@ -100,16 +104,24 @@ client.MessageReceived += async message =>
         .Replace($"<@!{client.CurrentUser.Id}>", "")
         .Trim();
 
-    var imageUrls = message.Attachments
-       .Where(a => a.ContentType?.StartsWith("image/") == true)
-       .Select(a => a.Url);
+    var contents = new List<AIContent>();
+    if (!string.IsNullOrWhiteSpace(content))
+        contents.Add(new TextContent(content)); 
 
-    if (imageUrls.Any())
+    var imageAttachments = message.Attachments
+        .Where(a => a.ContentType?.StartsWith("image/") == true)
+        .ToList();
+
+    if (imageAttachments.Count > 0)
     {
-        content += "\n\nImage Url：\n" + string.Join("\n", imageUrls);
+        foreach (var att in imageAttachments)
+        {
+            var mt = GuessImageMediaType(att.ContentType, att.Url);
+            contents.Add(new UriContent(new Uri(att.Url), mt));
+        }
     }
 
-    messages.Add(new(ChatRole.User, content));
+    messages.Add(new (ChatRole.User, contents));
 
     await message.Channel.TriggerTypingAsync();
 
@@ -128,3 +140,18 @@ await client.StartAsync();
 
 Console.WriteLine("Bot 已啟動，按 Ctrl+C 結束");
 await Task.Delay(-1);
+
+static string GuessImageMediaType(string? contentTypeFromDiscord, string url)
+{
+    if (!string.IsNullOrWhiteSpace(contentTypeFromDiscord)) return contentTypeFromDiscord!;
+    var ext = Path.GetExtension(new Uri(url).AbsolutePath).ToLowerInvariant();
+    return ext switch
+    {
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png" => "image/png",
+        ".gif" => "image/gif",
+        ".webp" => "image/webp",
+        ".bmp" => "image/bmp",
+        _ => "image/*"
+    };
+}
