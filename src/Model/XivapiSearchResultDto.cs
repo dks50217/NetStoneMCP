@@ -54,4 +54,18 @@ namespace NetStoneMCP.Model
         [JsonPropertyName("path_hr1")]
         public string PathHr1 { get; set; } = default!;
     }
+
+    public class XivapiRecipeResultDto
+    {
+        public int ItemResultTargetID { get; set; }
+        public string Name { get; set; } = default!;
+        public int ClassJobLevel { get; set; }
+        public List<RecipeIngredient> Ingredients { get; set; } = new();
+    }
+
+    public class RecipeIngredient
+    {
+        public int ID { get; set; }
+        public int Amount { get; set; }
+    }
 }

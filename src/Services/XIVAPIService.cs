@@ -14,6 +14,7 @@ namespace NetStoneMCP.Services
     public interface IXIVAPIService
     {
         public Task<IEnumerable<XivapiResult>?> GetItemIdByNameAsync(string itemName);
+        public Task<IEnumerable<XivapiRecipeResultDto>?> GetRecipesByItemIdAsync(int itemId);
     }
 
     public class XIVAPIService : IXIVAPIService
@@ -45,6 +46,17 @@ namespace NetStoneMCP.Services
             }
 
             return response.Results;
+        }
+
+        public async Task<IEnumerable<XivapiRecipeResultDto>?> GetRecipesByItemIdAsync(int itemId)
+        {
+            var sheets = "Recipe";
+
+            var url = $"{_endPoint}/search?query=Crafted{itemId}&sheets={sheets}&fields=ItemResultTargetID,Name,ClassJobLevel,Ingredients";
+
+            var response = await _httpClient.GetFromJsonAsync<IEnumerable<XivapiRecipeResultDto>>(url);
+
+            return response;
         }
     }
 }

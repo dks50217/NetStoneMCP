@@ -38,5 +38,19 @@ namespace NetStoneMCP.Tools
 
             return JsonSerializer.Serialize(items);
         }
+
+        [McpServerTool(Name = "get_item_recipes", Title = "Get item recipes")]
+        [Description("Retrieve all crafting recipes that produce the specified FFXIV item via XIVAPI v2. Input: itemId (int); returns recipe name, required job level and ingredient list.")]
+        public async Task<string> GetRecipesByItemId([Description("Item id.")] int id)
+        {
+            var result = await _xivapiService.GetRecipesByItemIdAsync(id);
+
+            if (result is null || !result.Any())
+            {
+                return JsonSerializer.Serialize(new { error = "recipes not found." });
+            }
+
+            return JsonSerializer.Serialize(result);
+        }
     }
 }

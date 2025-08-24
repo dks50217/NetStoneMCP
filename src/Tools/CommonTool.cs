@@ -13,9 +13,10 @@ using System.Threading.Tasks;
 namespace NetStoneMCP.Tools
 {
     [McpServerToolType]
-    public class CommonTool(ICommonService commonService, ILogger<CommonTool> logger)
+    public class CommonTool(ICommonService commonService, ILodeStoneNewsService lodeStoneNewsService, ILogger<CommonTool> logger)
     {
         private readonly ICommonService _commonService = commonService;
+        private readonly ILodeStoneNewsService _lodeStoneNewsService = lodeStoneNewsService;
         private readonly ILogger<CommonTool> _logger = logger;
 
         [McpServerTool(Name = "get_data_center", Title = "Get data center information")]
@@ -30,6 +31,16 @@ namespace NetStoneMCP.Tools
         public async Task<IEnumerable<WorldDto>?> GetWorlds()
         {
             return await _commonService.GetWorlds();
+        }
+
+        [McpServerTool(
+            Name = "ffxiv_get_current_maintenance",
+            Title = "FFXIV Current Maintenance Info"
+        )]
+        [Description("Retrieve the current Final Fantasy XIV maintenance events, including start time, end time, and description.")]
+        public async Task<IEnumerable<LodeStoneNewsMaintenance>?> GetCurrentMaintenance()
+        {
+            return await _lodeStoneNewsService.GetCurrentMaintenances();
         }
     }
 }
