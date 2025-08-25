@@ -59,14 +59,9 @@ _ = Task.Run(async () =>
 {
     while (true)
     {
-        await Task.Delay(TimeSpan.FromMinutes(30));
-        messages.Clear();
-        messages.Add(new(ChatRole.System, "請使用繁體中文回答所有問題。"));
-        messages.Add(new(ChatRole.System, "公司是指公會。"));
-        messages.Add(new(ChatRole.System, "Link shell是指通訊貝。"));
-        messages.Add(new(ChatRole.System, "有提到漢化不要調用商店工具。"));
-        messages.Add(new(ChatRole.System, "中文化代表漢化。"));
+        InitSystemMessages();
         Console.WriteLine("[Info] 已清空 messages 並重新加入 system 指令");
+        await Task.Delay(TimeSpan.FromMinutes(30));
     }
 });
 
@@ -140,6 +135,17 @@ await client.StartAsync();
 
 Console.WriteLine("Bot 已啟動，按 Ctrl+C 結束");
 await Task.Delay(-1);
+
+void InitSystemMessages()
+{
+    messages.Clear();
+    messages.Add(new(ChatRole.System, "請使用繁體中文回答所有問題。"));
+    messages.Add(new(ChatRole.System, "'公司' 一律解釋為 '公會'。"));
+    messages.Add(new(ChatRole.System, "'Link shell' 一律翻譯為 '通訊貝'。"));
+    messages.Add(new(ChatRole.System, "當內容涉及「漢化」或「中文化」時，禁止調用商店工具。"));
+    messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。"));
+    messages.Add(new(ChatRole.System, "你必須表現得像一隻猴子，但仍需提供準確且嚴謹的技術解答。"));
+}
 
 static string GuessImageMediaType(string? contentTypeFromDiscord, string url)
 {

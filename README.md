@@ -17,6 +17,7 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
 * [FFXIV_PaissaHouse](https://github.com/zhudotexe/FFXIV_PaissaHouse)
 * [FFXIVStore](https://store.finalfantasyxiv.com/ffxivstore/en-us/)
 * [XIVAPI](https://github.com/xivapi)
+* [FFXIV Lodestone News](https://lodestonenews.com/)
 
 ## Setup
 
