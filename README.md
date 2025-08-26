@@ -18,6 +18,7 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
 * [FFXIVStore](https://store.finalfantasyxiv.com/ffxivstore/en-us/)
 * [XIVAPI](https://github.com/xivapi)
 * [FFXIV Lodestone News](https://lodestonenews.com/)
+* [Thaliak] (https://thaliak.xiv.dev/)
 
 ## Setup
 
