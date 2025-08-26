@@ -38,7 +38,7 @@ namespace NetStoneMCP.Tools
             Title = "FFXIV Current Maintenance Info"
         )]
         [Description("Retrieve the current Final Fantasy XIV maintenance events, including start time, end time, and description.")]
-        public async Task<IEnumerable<LodeStoneNewsMaintenance>?> GetCurrentMaintenance()
+        public async Task<LodeStoneNewsMaintenance?> GetCurrentMaintenance()
         {
             return await _lodeStoneNewsService.GetCurrentMaintenances();
         }

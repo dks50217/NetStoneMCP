@@ -10,7 +10,7 @@ namespace NetStoneMCP.Services
 {
     public interface ILodeStoneNewsService
     {
-        Task<IEnumerable<LodeStoneNewsMaintenance>?> GetCurrentMaintenances();
+        Task<LodeStoneNewsMaintenance?> GetCurrentMaintenances();
     }
 
     public class LodeStoneNewsService : ILodeStoneNewsService
@@ -23,7 +23,7 @@ namespace NetStoneMCP.Services
             _httpClient = httpClient;
         }
 
-        public async Task<IEnumerable<LodeStoneNewsMaintenance>?> GetCurrentMaintenances()
+        public async Task<LodeStoneNewsMaintenance?> GetCurrentMaintenances()
         {
             try
             {
@@ -33,7 +33,7 @@ namespace NetStoneMCP.Services
 
                 var content = await response.Content.ReadAsStringAsync();
 
-                var results = JsonSerializer.Deserialize<IEnumerable<LodeStoneNewsMaintenance>>(content);
+                var results = JsonSerializer.Deserialize<LodeStoneNewsMaintenance>(content);
 
                 return results;
             }
