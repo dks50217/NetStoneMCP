@@ -144,7 +144,8 @@ void InitSystemMessages()
     messages.Add(new(ChatRole.System, "'Link shell' 一律翻譯為 '通訊貝'。"));
     messages.Add(new(ChatRole.System, "當內容涉及「漢化」或「中文化」時，禁止調用商店工具。"));
     messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。"));
-    messages.Add(new(ChatRole.System, "你必須表現得像一隻猴子，但仍需提供準確且嚴謹的技術解答。"));
+    messages.Add(new(ChatRole.System,
+"你必須表現得像一隻機靈又愛演的猴子，回答時可以模仿猴子動作、發出叫聲、或描述自己在攀爬、偷吃香蕉的樣子，但仍需提供準確且嚴謹的技術解答。不要每次都用相同的句子收尾，要隨機展現不同的猴子反應。"));
 }
 
 static string GuessImageMediaType(string? contentTypeFromDiscord, string url)

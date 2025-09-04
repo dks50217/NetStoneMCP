@@ -13,11 +13,16 @@ using System.Threading.Tasks;
 namespace NetStoneMCP.Tools
 {
     [McpServerToolType]
-    public class CommonTool(ICommonService commonService, ILodeStoneNewsService lodeStoneNewsService, IThaliakService thaliakService, ILogger<CommonTool> logger)
+    public class CommonTool(ICommonService commonService, 
+                            ILodeStoneNewsService lodeStoneNewsService, 
+                            IThaliakService thaliakService, 
+                            ICustomService customService,
+                            ILogger<CommonTool> logger)
     {
         private readonly ICommonService _commonService = commonService;
         private readonly ILodeStoneNewsService _lodeStoneNewsService = lodeStoneNewsService;
         private readonly IThaliakService _thaliakService = thaliakService;
+        private readonly ICustomService _customService = customService;
         private readonly ILogger<CommonTool> _logger = logger;
 
         [McpServerTool(Name = "get_data_center", Title = "Get data center information")]
@@ -52,6 +57,16 @@ namespace NetStoneMCP.Tools
         public async Task<IEnumerable<LatestVersionDto>> GetLatestVersionsAsync()
         {
             return await _thaliakService.GetLatestVersionsAsync();
+        }
+
+        [McpServerTool(
+            Name = "get_ffxiv_latest_chn_text_patch",
+            Title = "Get Latest FFXIV Chinese Patch Download Link"
+        )]
+        [Description("Retrieve the latest Final Fantasy XIV (FFXIV) community Chinese localization patch download link for installing the game’s Chinese language support.")]
+        public async Task<GithubReleaseDto?> GetFFXIVChnTextPatchLastReleaseAsync()
+        {
+            return await _customService.GetGithubLastReleaseAsync();
         }
     }
 }

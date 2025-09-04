@@ -14,6 +14,7 @@
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.2.0-preview.1" />
     <!--<PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.11" />-->
     <PackageReference Include="NetStone" Version="1.4.1" />
+    <PackageReference Include="Octokit" Version="14.0.0" />
   </ItemGroup>
 
   <ItemGroup>

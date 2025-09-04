@@ -40,6 +40,7 @@ builder.Services.AddHttpClient<IXIVAPIService, XIVAPIService>();
 builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddHttpClient<ILodeStoneNewsService, LodeStoneNewsService>();
 builder.Services.AddHttpClient<IThaliakService, ThaliakService>();
+builder.Services.AddScoped<ICustomService, CustomService>();
 
 static async Task InitNetStone(IHost host)
 {
