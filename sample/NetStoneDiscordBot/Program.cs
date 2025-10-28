@@ -18,6 +18,8 @@ string model = "gpt-4o-mini";
 IChatClient chatClient;
 var messages = new List<Microsoft.Extensions.AI.ChatMessage>();
 
+DateTime nextResetUtc = default;
+
 IList<McpClientTool> tools;
 IClientTransport clientTransport;
 
@@ -55,13 +57,16 @@ chatClient = new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient()
                     .AsBuilder().UseFunctionInvocation().Build();
 
 // 每 30 分鐘清空一次 messages
+var period = TimeSpan.FromMinutes(30);
+
 _ = Task.Run(async () =>
 {
     while (true)
     {
         InitSystemMessages();
-        Console.WriteLine("[Info] 已清空 messages 並重新加入 system 指令");
-        await Task.Delay(TimeSpan.FromMinutes(30));
+        nextResetUtc = DateTime.UtcNow.Add(period);
+        Console.WriteLine("[Info] 已清空 messages 並重新加入 system 指令；下次清空時間(UTC)： " + nextResetUtc.ToString("O"));
+        await Task.Delay(period);
     }
 });
 
@@ -127,7 +132,9 @@ client.MessageReceived += async message =>
 
     messages.Add(new(ChatRole.Assistant, responseMessage.ToString()));
 
-    await message.Channel.SendMessageAsync(responseMessage.ToString());
+    var forgetRemind = BuildForgetRemind(nextResetUtc);
+
+    await message.Channel.SendMessageAsync(responseMessage.ToString() + forgetRemind);
 };
 
 await client.LoginAsync(TokenType.Bot, botKey);
@@ -146,6 +153,28 @@ void InitSystemMessages()
     messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。"));
     messages.Add(new(ChatRole.System,
 "你必須表現得像一隻機靈又愛演的猴子，回答時可以模仿猴子動作、發出叫聲、或描述自己在攀爬、偷吃香蕉的樣子，但仍需提供準確且嚴謹的技術解答。不要每次都用相同的句子收尾，要隨機展現不同的猴子反應。"));
+}
+
+static string BuildForgetRemind(DateTime nextResetUtc)
+{
+    if (nextResetUtc == default) return string.Empty;
+
+    var remaining = nextResetUtc - DateTime.UtcNow;
+    if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
+
+    string timeLeft = $"{remaining:mm\\:ss}";
+
+    var options = new[]
+    {
+        $"\n\n🐒 我還能記得大約 {timeLeft}，之後就要忘光啦～",
+        $"\n\n🙈 再過 {timeLeft} 我就會把剛剛的事情忘掉喔！",
+        $"\n\n🍌 記憶能維持 {timeLeft}，然後我就會變成一隻健忘猴～",
+        $"\n\n⏳ 還剩 {timeLeft}，然後我的腦袋就會清空啦～",
+        $"\n\n🤭 呀咧～大概 {timeLeft} 後我就啥都不記得了！"
+    };
+
+    var rnd = new Random();
+    return options[rnd.Next(options.Length)];
 }
 
 static string GuessImageMediaType(string? contentTypeFromDiscord, string url)

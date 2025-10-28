@@ -42,7 +42,10 @@ namespace NetStoneMCP.Services
                 return new GithubReleaseDto
                 {
                     HtmlUrl = releases.HtmlUrl,
-                    TagName = releases.TagName
+                    TagName = releases.TagName,
+                    Desc = releases.Body,
+                    CreatedAt = releases.CreatedAt,
+                    PublishedAt = releases.PublishedAt,
                 };
             }
             catch

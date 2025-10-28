@@ -10,5 +10,11 @@ namespace NetStoneMCP.Model
     {
         public string? TagName { get; set; }
         public string? HtmlUrl { get; set; }
+        public string? Desc { get; set; }
+        public string? Author { get; set; }
+
+        public DateTimeOffset CreatedAt { get; set; }
+
+        public DateTimeOffset? PublishedAt { get; set; }
     }
 }
