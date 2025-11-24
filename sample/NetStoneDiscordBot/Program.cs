@@ -10,20 +10,27 @@ using OpenAI.Chat;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
+using System.IO;
+using System.Threading;
 
 string apiKey = "";
 string botKey = "";
-string model = "gpt-4o-mini";
+string model = "gpt-5.1-chat-latest";
 
 IChatClient chatClient;
 var messages = new List<Microsoft.Extensions.AI.ChatMessage>();
 
 DateTime nextResetUtc = default;
 
+// MCP
 IList<McpClientTool> tools;
 IClientTransport clientTransport;
 
+// 記憶重置週期 & 控制用的 CTS
+TimeSpan period = TimeSpan.FromMinutes(30);
+CancellationTokenSource? resetCts = null;
 
+// 傳輸型態
 var transportType = Environment.GetEnvironmentVariable("TRANSPORT_TYPE") ?? "Stdio";
 
 if (transportType == "Stdio")
@@ -47,7 +54,6 @@ else
 }
 
 var mcpClient = await McpClientFactory.CreateAsync(clientTransport);
-
 tools = await mcpClient.ListToolsAsync();
 
 apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? string.Empty;
@@ -55,20 +61,6 @@ botKey = Environment.GetEnvironmentVariable("DISCORD_BOT_KEY") ?? string.Empty;
 
 chatClient = new OpenAIClient(apiKey).GetChatClient(model).AsIChatClient()
                     .AsBuilder().UseFunctionInvocation().Build();
-
-// 每 30 分鐘清空一次 messages
-var period = TimeSpan.FromMinutes(30);
-
-_ = Task.Run(async () =>
-{
-    while (true)
-    {
-        InitSystemMessages();
-        nextResetUtc = DateTime.UtcNow.Add(period);
-        Console.WriteLine("[Info] 已清空 messages 並重新加入 system 指令；下次清空時間(UTC)： " + nextResetUtc.ToString("O"));
-        await Task.Delay(period);
-    }
-});
 
 var client = new DiscordSocketClient(new DiscordSocketConfig
 {
@@ -83,6 +75,7 @@ client.Log += msg =>
     return Task.CompletedTask;
 };
 
+// 處理文字訊息
 client.MessageReceived += async message =>
 {
     if (message.Author.Id == client.CurrentUser.Id)
@@ -95,8 +88,6 @@ client.MessageReceived += async message =>
         return;
     }
 
-    var imageString = string.Empty;
-
     var responseMessage = new StringBuilder();
 
     string content = message.Content
@@ -106,7 +97,7 @@ client.MessageReceived += async message =>
 
     var contents = new List<AIContent>();
     if (!string.IsNullOrWhiteSpace(content))
-        contents.Add(new TextContent(content)); 
+        contents.Add(new TextContent(content));
 
     var imageAttachments = message.Attachments
         .Where(a => a.ContentType?.StartsWith("image/") == true)
@@ -121,7 +112,7 @@ client.MessageReceived += async message =>
         }
     }
 
-    messages.Add(new (ChatRole.User, contents));
+    messages.Add(new(ChatRole.User, contents));
 
     await message.Channel.TriggerTypingAsync();
 
@@ -134,14 +125,64 @@ client.MessageReceived += async message =>
 
     var forgetRemind = BuildForgetRemind(nextResetUtc);
 
-    await message.Channel.SendMessageAsync(responseMessage.ToString() + forgetRemind);
+    // 回覆時加上一顆「延長記憶」按鈕
+    var components = new ComponentBuilder()
+        .WithButton(
+            label: "延長記憶 10 分鐘",
+            customId: "extend_memory_10",
+            style: ButtonStyle.Primary
+        );
+
+    await message.Channel.SendMessageAsync(
+        text: responseMessage.ToString() + forgetRemind,
+        components: components.Build()
+    );
 };
+
+// 處理按鈕互動（延長記憶）
+client.ButtonExecuted += OnButtonExecuted;
+
+// 初始化系統訊息 & 啟動第一次重置計時
+InitSystemMessages();
+nextResetUtc = DateTime.UtcNow.Add(period);
+StartResetLoop();
 
 await client.LoginAsync(TokenType.Bot, botKey);
 await client.StartAsync();
 
 Console.WriteLine("Bot 已啟動，按 Ctrl+C 結束");
 await Task.Delay(-1);
+
+void StartResetLoop()
+{
+    // 取消舊的計時器
+    resetCts?.Cancel();
+    resetCts = new CancellationTokenSource();
+
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            var delay = nextResetUtc - DateTime.UtcNow;
+            if (delay < TimeSpan.Zero)
+                delay = TimeSpan.Zero;
+
+            await Task.Delay(delay, resetCts.Token);
+
+            // 時間到 → 清空 messages 並重新加入 system 指令
+            InitSystemMessages();
+            nextResetUtc = DateTime.UtcNow.Add(period);
+            Console.WriteLine("[Info] 已清空 messages 並重新加入 system 指令；下次清空時間(UTC)： " + nextResetUtc.ToString("O"));
+
+            // 再排下一輪
+            StartResetLoop();
+        }
+        catch (TaskCanceledException)
+        {
+            // 被延長記憶時會取消，不是錯誤
+        }
+    });
+}
 
 void InitSystemMessages()
 {
@@ -190,4 +231,44 @@ static string GuessImageMediaType(string? contentTypeFromDiscord, string url)
         ".bmp" => "image/bmp",
         _ => "image/*"
     };
+}
+
+async Task OnButtonExecuted(SocketMessageComponent component)
+{
+    // 延長記憶用
+    if (component.Data.CustomId == "extend_memory_10")
+    {
+        var extend = TimeSpan.FromMinutes(10);
+        var maxDuration = TimeSpan.FromHours(1);
+        var now = DateTime.UtcNow;
+
+        // 目前剩餘記憶截止時間，如果還沒設定或已經過期，就從現在開始算
+        var currentDeadline = nextResetUtc == default || nextResetUtc < now
+            ? now
+            : nextResetUtc;
+
+        // 延長之後的新截止時間
+        var newDeadline = currentDeadline.Add(extend);
+
+        // 如果延長後，總記憶時間超過 1 小時，就拒絕延長
+        if (newDeadline - now > maxDuration)
+        {
+            await component.RespondAsync(
+                "⏳ 記憶最長只能維持 1 小時，不能再繼續延長啦！",
+                ephemeral: true
+            );
+            return;
+        }
+
+        // OK，可以延長
+        nextResetUtc = newDeadline;
+
+        // 用新的時間重新啟動清空計時器
+        StartResetLoop();
+
+        await component.RespondAsync(
+            $"🍌 已幫你把記憶延長 {extend.TotalMinutes} 分鐘！",
+            ephemeral: true
+        );
+    }
 }

@@ -52,5 +52,8 @@ namespace NetStoneMCP.Model
 
         [JsonPropertyName("current")]
         public bool Current { get; set; }
+
+        [JsonPropertyName("description")]
+        public string Desc { get; set; } = string.Empty;
     }
 }

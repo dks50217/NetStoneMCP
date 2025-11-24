@@ -49,10 +49,21 @@ namespace NetStoneMCP.Tools
             return await _lodeStoneNewsService.GetCurrentMaintenances();
         }
 
-        [McpServerTool(
-          Name = "get_ffxiv_latest_versions",
-          Title = "Get FFXIV Latest Game Versions"
-      )]
+        [McpServerTool(Name = "ffxiv_get_topics", Title = "FFXIV Get Topics")]
+        [Description("Retrieves the latest 'Topics' articles from the Final Fantasy XIV(FFXIV) Lodestone website.")]
+        public async Task<IEnumerable<LodeStoneNewsItem>?> GetTopics()
+        {
+            return await _lodeStoneNewsService.GetTopics();
+        }
+
+        [McpServerTool(Name = "ffxiv_get_post", Title = "FFXIV Get Posts")]
+        [Description("Retrieves detailed information for a specific Final Fantasy XIV(FFXIV) Lodestone post by its ID.")]
+        public async Task<LodeStoneNewsItem?> GetPost(string id)
+        {
+            return await _lodeStoneNewsService.GetPost(id);
+        }
+
+        [McpServerTool(Name = "get_ffxiv_latest_versions", Title = "Get FFXIV Latest Game Versions")]
         [Description("Fetch the latest available version numbers for FFXIV game and expansions (boot, game, ex1~ex5).")]
         public async Task<IEnumerable<LatestVersionDto>> GetLatestVersionsAsync()
         {
