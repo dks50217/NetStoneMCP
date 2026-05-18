@@ -79,5 +79,15 @@ namespace NetStoneMCP.Tools
         {
             return await _customService.GetGithubLastReleaseAsync();
         }
+
+        [McpServerTool(
+      Name = "get_ffxiv_cht_lock_server",
+      Title = "Get FFXIV Traditional Chinese servers character creation status"
+  )]
+        [Description("Retrieves the current character creation availability (open/closed) for each World on the Final Fantasy XIV Traditional Chinese servers, and returns a concise summary of the latest status.")]
+        public async Task<string?> GetFFXIVTraditionalChineseLockServerStatusAsync()
+        {
+            return await _commonService.GetFFXIVTraditionalChineseLockServerStatus();
+        }
     }
 }

@@ -76,29 +76,66 @@ client.Log += msg =>
 };
 
 // 處理文字訊息
-client.MessageReceived += async message =>
+client.MessageReceived += async rawMessage =>
 {
+    // 確保是使用者文字訊息
+    if (rawMessage is not SocketUserMessage message)
+        return;
+
+    // 忽略自己
     if (message.Author.Id == client.CurrentUser.Id)
         return;
 
+    // 判斷有沒有被 Tag
     var mentioned = message.MentionedUsers.Any(u => u.Id == client.CurrentUser.Id);
-
-    if (mentioned == false)
-    {
+    if (!mentioned)
         return;
-    }
 
     var responseMessage = new StringBuilder();
 
+    // 把 @Bot 拿掉
     string content = message.Content
         .Replace($"<@{client.CurrentUser.Id}>", "")
         .Replace($"<@!{client.CurrentUser.Id}>", "")
         .Trim();
 
     var contents = new List<AIContent>();
+
+    // ① 如果這是一則「回覆別人」的訊息，先把「原始訊息」塞進去
+    if (message.ReferencedMessage is IUserMessage origin)
+    {
+        var originText = new StringBuilder();
+        originText.AppendLine("【以下是本次對話所回覆的原始訊息】");
+        if (message.Channel is SocketTextChannel textChannel)
+        {
+            originText.AppendLine($"頻道：#{textChannel.Name}");
+        }
+        originText.AppendLine($"作者：{origin.Author.Username}");
+        originText.AppendLine($"內容：{origin.Content}");
+        originText.AppendLine("【以上為原始訊息，以下為使用者目前的回覆】");
+
+        contents.Add(new TextContent(originText.ToString()));
+
+        // 如果你也想讓模型看到「原始訊息裡的圖片」
+        var originImages = origin.Attachments
+            .Where(a => a.ContentType?.StartsWith("image/") == true)
+            .ToList();
+
+        if (originImages.Count > 0)
+        {
+            foreach (var att in originImages)
+            {
+                var mt = GuessImageMediaType(att.ContentType, att.Url);
+                contents.Add(new UriContent(new Uri(att.Url), mt));
+            }
+        }
+    }
+
+    // ② 本次訊息的文字內容
     if (!string.IsNullOrWhiteSpace(content))
         contents.Add(new TextContent(content));
 
+    // ③ 本次訊息附上的圖片
     var imageAttachments = message.Attachments
         .Where(a => a.ContentType?.StartsWith("image/") == true)
         .ToList();
@@ -112,6 +149,7 @@ client.MessageReceived += async message =>
         }
     }
 
+    // 丟給模型
     messages.Add(new(ChatRole.User, contents));
 
     await message.Channel.TriggerTypingAsync();
@@ -125,17 +163,27 @@ client.MessageReceived += async message =>
 
     var forgetRemind = BuildForgetRemind(nextResetUtc);
 
-    // 回覆時加上一顆「延長記憶」按鈕
-    var components = new ComponentBuilder()
-        .WithButton(
-            label: "延長記憶 10 分鐘",
-            customId: "extend_memory_10",
-            style: ButtonStyle.Primary
-        );
+    // 算距離清空還剩多久（UTC）
+    var remaining = nextResetUtc == default ? TimeSpan.Zero : (nextResetUtc - DateTime.UtcNow);
+    if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
+
+    // 少於 10 分鐘才顯示延長按鈕
+    MessageComponent? components = null;
+
+    if (remaining < TimeSpan.FromMinutes(10))
+    {
+        components = new ComponentBuilder()
+            .WithButton(
+                label: "延長記憶 10 分鐘",
+                customId: "extend_memory_10",
+                style: ButtonStyle.Primary
+            )
+            .Build();
+    }
 
     await message.Channel.SendMessageAsync(
         text: responseMessage.ToString() + forgetRemind,
-        components: components.Build()
+        components: components
     );
 };
 
@@ -193,7 +241,12 @@ void InitSystemMessages()
     messages.Add(new(ChatRole.System, "當內容涉及「漢化」或「中文化」時，禁止調用商店工具。"));
     messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。"));
     messages.Add(new(ChatRole.System,
-"你必須表現得像一隻機靈又愛演的猴子，回答時可以模仿猴子動作、發出叫聲、或描述自己在攀爬、偷吃香蕉的樣子，但仍需提供準確且嚴謹的技術解答。不要每次都用相同的句子收尾，要隨機展現不同的猴子反應。"));
+    @"你需要帶有「機靈愛演的猴子」風格，但必須以技術正確與清晰為最高優先。
+- 猴子風格分級：M0=無，M1=輕量點綴，M2=中等，M3=重度。預設使用 M1。
+- 猴子內容不得超過總字數 12%，不得插入程式碼區塊或步驟清單中間。
+- 猴子表演僅可出現在：開頭一句與結尾一句（或擇一），每句不超過 20 字。
+- 風格元素需在「擬聲/動作/道具/情緒」中隨機挑選 1~2 種，且避免連續回答用同一句。
+- 若題目為除錯、資安、法規、重大風險：自動降級為 M0 或 M1，保持嚴肅精準。"));
 }
 
 static string BuildForgetRemind(DateTime nextResetUtc)
