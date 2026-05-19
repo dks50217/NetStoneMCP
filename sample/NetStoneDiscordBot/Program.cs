@@ -30,6 +30,16 @@ IClientTransport clientTransport;
 TimeSpan period = TimeSpan.FromMinutes(30);
 CancellationTokenSource? resetCts = null;
 
+// Agent Skills — 從 Skills/ 資料夾載入 .md 檔案
+var skillsDir = Path.Combine(AppContext.BaseDirectory, "Skills");
+var skills = Directory
+    .GetFiles(skillsDir, "*.md")
+    .ToDictionary(
+        f => Path.GetFileNameWithoutExtension(f),
+        f => File.ReadAllText(f)
+    );
+string currentSkillName = skills.ContainsKey("猴子") ? "猴子" : skills.Keys.First();
+
 // 傳輸型態
 var transportType = Environment.GetEnvironmentVariable("TRANSPORT_TYPE") ?? "Stdio";
 
@@ -98,6 +108,32 @@ client.MessageReceived += async rawMessage =>
         .Replace($"<@{client.CurrentUser.Id}>", "")
         .Replace($"<@!{client.CurrentUser.Id}>", "")
         .Trim();
+
+    // !skill 指令：列出或切換 Agent Skill
+    if (content.StartsWith("!skill"))
+    {
+        var arg = content["!skill".Length..].Trim();
+
+        if (string.IsNullOrEmpty(arg))
+        {
+            var list = string.Join("\n", skills.Keys.Select(k =>
+                k == currentSkillName ? $"▶ **{k}**（目前）" : $"　 {k}"));
+            await message.Channel.SendMessageAsync($"可用風格：\n{list}\n\n使用 `!skill 風格名稱` 切換。");
+            return;
+        }
+
+        if (!skills.ContainsKey(arg))
+        {
+            var names = string.Join("、", skills.Keys);
+            await message.Channel.SendMessageAsync($"找不到「{arg}」，可用風格：{names}");
+            return;
+        }
+
+        currentSkillName = arg;
+        InitSystemMessages();
+        await message.Channel.SendMessageAsync($"已切換為「{arg}」風格！（對話記憶已重置）");
+        return;
+    }
 
     var contents = new List<AIContent>();
 
@@ -240,13 +276,7 @@ void InitSystemMessages()
     messages.Add(new(ChatRole.System, "'Link shell' 一律翻譯為 '通訊貝'。"));
     messages.Add(new(ChatRole.System, "當內容涉及「漢化」或「中文化」時，禁止調用商店工具。"));
     messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。"));
-    messages.Add(new(ChatRole.System,
-    @"你需要帶有「機靈愛演的猴子」風格，但必須以技術正確與清晰為最高優先。
-- 猴子風格分級：M0=無，M1=輕量點綴，M2=中等，M3=重度。預設使用 M1。
-- 猴子內容不得超過總字數 12%，不得插入程式碼區塊或步驟清單中間。
-- 猴子表演僅可出現在：開頭一句與結尾一句（或擇一），每句不超過 20 字。
-- 風格元素需在「擬聲/動作/道具/情緒」中隨機挑選 1~2 種，且避免連續回答用同一句。
-- 若題目為除錯、資安、法規、重大風險：自動降級為 M0 或 M1，保持嚴肅精準。"));
+    messages.Add(new(ChatRole.System, skills[currentSkillName]));
 }
 
 static string BuildForgetRemind(DateTime nextResetUtc)
