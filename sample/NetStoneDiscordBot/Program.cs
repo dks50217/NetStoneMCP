@@ -15,7 +15,7 @@ using System.Threading;
 
 string apiKey = "";
 string botKey = "";
-string model = "gpt-5.1-chat-latest";
+string model = "gpt-5.1";
 
 IChatClient chatClient;
 var messages = new List<Microsoft.Extensions.AI.ChatMessage>();
