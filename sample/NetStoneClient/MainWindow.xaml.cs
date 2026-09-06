@@ -1,4 +1,4 @@
-﻿using MdXaml;
+using MdXaml;
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Transport;
@@ -24,10 +24,10 @@ namespace NetStoneClient
     public partial class MainWindow : Window
     {
         private string _apiKey = "";
-        private string _model = "gpt-4o-mini";
-        private IChatClient _chatClient;
+        private string _model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.1";
+        private IChatClient? _chatClient;
         private List<Microsoft.Extensions.AI.ChatMessage> _messages = new List<Microsoft.Extensions.AI.ChatMessage>();
-        private IList<McpClientTool> _tools;
+        private IList<McpClientTool>? _tools;
         public MainWindow()
         {
             InitializeComponent();
@@ -43,11 +43,23 @@ namespace NetStoneClient
         {
             AddUIMessage(ChatRole.System, "🕐 初始化中，請稍候...");
 
+            var projectPath = Environment.GetEnvironmentVariable("NETSTONE_PROJECT_PATH");
+            if (string.IsNullOrWhiteSpace(projectPath))
+            {
+                var candidates = new[]
+                {
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "../../../../../src/NetStoneMCP.csproj")),
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(AppContext.BaseDirectory, "../../src/NetStoneMCP.csproj")),
+                    System.IO.Path.GetFullPath(System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "src/NetStoneMCP.csproj"))
+                };
+                projectPath = candidates.FirstOrDefault(System.IO.File.Exists) ?? candidates[0];
+            }
+
             var clientTransport = new StdioClientTransport(new StdioClientTransportOptions
             {
                 Name = "NetStoneMCP",
                 Command = "dotnet",
-                Arguments = ["run", "--project", "../../../../../src/NetStoneMCP.csproj", "--no-build"],
+                Arguments = ["run", "--project", projectPath, "--no-build"],
             });
 
             var client = await McpClientFactory.CreateAsync(clientTransport);
@@ -86,6 +98,12 @@ namespace NetStoneClient
 
         private async void SubmitMessage()
         {
+            if (_chatClient == null)
+            {
+                MessageBox.Show("請確認 API Key 是否設定並成功初始化！", "提示");
+                return;
+            }
+
             string userMessage = InputBox.Text.Trim();
 
             _messages.Add(new(ChatRole.User, userMessage));
@@ -98,7 +116,7 @@ namespace NetStoneClient
             bool isFirst = true;
             string aiMessage = string.Empty;
 
-            await foreach (var update in _chatClient.GetStreamingResponseAsync(_messages, new() { Tools = [.. _tools] }))
+            await foreach (var update in _chatClient.GetStreamingResponseAsync(_messages, new() { Tools = [.. (_tools ?? [])] }))
             {
                 aiMessage += update.Text;
 

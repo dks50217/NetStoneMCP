@@ -9,6 +9,8 @@ namespace NetStoneMCP.Tests.Helpers
     {
         private readonly HttpResponseMessage _response;
 
+        public int CallCount { get; private set; }
+
         public FakeHttpMessageHandler(HttpResponseMessage response)
         {
             _response = response;
@@ -16,6 +18,7 @@ namespace NetStoneMCP.Tests.Helpers
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            CallCount++;
             return Task.FromResult(_response);
         }
     }

@@ -1,4 +1,4 @@
-﻿using NetStone.Model.Parseables.Character;
+using NetStone.Model.Parseables.Character;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +11,6 @@ namespace NetStoneMCP.Model
     {
         public LodestoneCharacter? Character { get; set; }
         public required string Race { get; set; }
+        public string? Clan { get; set; }
     }
 }

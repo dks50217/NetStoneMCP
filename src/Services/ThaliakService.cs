@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using NetStoneMCP.Model;
 using System;
 using System.Collections.Generic;
@@ -6,55 +8,90 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NetStoneMCP.Services
 {
     public interface IThaliakService
     {
-        public Task<IReadOnlyList<LatestVersionDto>> GetLatestVersionsAsync();
-        //public Task<IReadOnlyList<string>> GetPatchUrlsAsync();
+        public Task<IReadOnlyList<LatestVersionDto>> GetLatestVersionsAsync(CancellationToken cancellationToken = default);
     }
 
     public sealed class ThaliakService : IThaliakService
     {
         private readonly HttpClient _http;
+        private readonly ILogger<ThaliakService>? _logger;
+        private readonly IMemoryCache? _cache;
         private readonly string _endPoint;
         private readonly string[] _slugs;
 
-        public ThaliakService(HttpClient http)
+        private const string CacheKey = "Thaliak_LatestVersions";
+
+        private static readonly Dictionary<string, string> SlugNameMap = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["2b5cbc63"] = "Boot",
+            ["4e9a232b"] = "Base Game",
+            ["6b936f08"] = "ex1 (Heavensward)",
+            ["f29a3eb2"] = "ex2 (Stormblood)",
+            ["859d0e24"] = "ex3 (Shadowbringers)",
+            ["1bf99b87"] = "ex4 (Endwalker)",
+            ["6cfeab11"] = "ex5 (Dawntrail)"
+        };
+
+        public ThaliakService(HttpClient http, ILogger<ThaliakService>? logger = null, IMemoryCache? cache = null)
         {
             _http = http;
+            _logger = logger;
+            _cache = cache;
             _endPoint = "https://thaliak.xiv.dev/graphql/";
             _slugs = new[]
             {
+                "2b5cbc63", // boot
                 "4e9a232b", // game
                 "6b936f08", // ex1
                 "f29a3eb2", // ex2
                 "859d0e24", // ex3
-                "1bf99b87"  // ex4
+                "1bf99b87", // ex4
+                "6cfeab11"  // ex5 (Dawntrail)
             };
         }
 
-        public async Task<IReadOnlyList<LatestVersionDto>> GetLatestVersionsAsync()
+        public async Task<IReadOnlyList<LatestVersionDto>> GetLatestVersionsAsync(CancellationToken cancellationToken = default)
         {
+            if (_cache != null && _cache.TryGetValue(CacheKey, out IReadOnlyList<LatestVersionDto>? cached) && cached != null)
+            {
+                return cached;
+            }
+
             if (_slugs is null || _slugs.Length == 0)
                 return Array.Empty<LatestVersionDto>();
 
-            var query = BuildLatestVersionsQuery(_slugs);
-            using var doc = await PostGraphQLAsync(query);
-
-            var data = doc.RootElement.GetProperty("data");
-            var list = new List<LatestVersionDto>(_slugs.Length);
-
-            foreach (var prop in data.EnumerateObject())
+            try
             {
-                var repo = prop.Value;
-                var slug = repo.GetProperty("slug").GetString()!;
-                var ver = repo.GetProperty("latestVersion").GetProperty("versionString").GetString()!;
-                list.Add(new LatestVersionDto(slug, ver));
+                var query = BuildLatestVersionsQuery(_slugs);
+                using var doc = await PostGraphQLAsync(query, cancellationToken);
+
+                var data = doc.RootElement.GetProperty("data");
+                var list = new List<LatestVersionDto>(_slugs.Length);
+
+                foreach (var prop in data.EnumerateObject())
+                {
+                    var repo = prop.Value;
+                    var slug = repo.GetProperty("slug").GetString()!;
+                    var ver = repo.GetProperty("latestVersion").GetProperty("versionString").GetString()!;
+                    var name = SlugNameMap.GetValueOrDefault(slug, slug);
+                    list.Add(new LatestVersionDto(slug, ver, name));
+                }
+
+                _cache?.Set(CacheKey, (IReadOnlyList<LatestVersionDto>)list, TimeSpan.FromMinutes(10));
+                return list;
             }
-            return list;
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error fetching latest FFXIV versions from Thaliak");
+                return Array.Empty<LatestVersionDto>();
+            }
         }
 
         public async Task<IReadOnlyList<string>> GetPatchUrlsAsync()
@@ -125,7 +162,7 @@ r{i}: repository(slug:""{slug}"") {{
             return sb.ToString();
         }
 
-        private async Task<JsonDocument> PostGraphQLAsync(string query)
+        private async Task<JsonDocument> PostGraphQLAsync(string query, CancellationToken cancellationToken = default)
         {
             var payload = new { query, variables = (object?)null };
 
@@ -134,9 +171,10 @@ r{i}: repository(slug:""{slug}"") {{
                 Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
             };
             req.Headers.TryAddWithoutValidation("Accept", "application/json");
+            req.Headers.TryAddWithoutValidation("User-Agent", "NetStoneMCP/1.0");
 
-            using var res = await _http.SendAsync(req);
-            var body = await res.Content.ReadAsStringAsync();
+            using var res = await _http.SendAsync(req, cancellationToken);
+            var body = await res.Content.ReadAsStringAsync(cancellationToken);
 
             if (!res.IsSuccessStatusCode)
                 throw new InvalidOperationException($"HTTP {(int)res.StatusCode} {res.ReasonPhrase}\n{body}");

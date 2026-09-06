@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,7 +29,7 @@ namespace NetStoneMCP.Model
     public class StoreFilter
     {
         public int id { get; set; }
-        public string name { get; set; }
+        public string? name { get; set; }
         public bool isNew { get; set; }
         public bool isSale { get; set; }
         public bool isHot { get; set; }

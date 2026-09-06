@@ -1,4 +1,4 @@
-﻿using NetStone.Model.Parseables.Character;
+using NetStone.Model.Parseables.Character;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace NetStoneMCP.Model
 {
-    public readonly record struct LatestVersionDto(string Slug, string VersionString);
+    public readonly record struct LatestVersionDto(string Slug, string VersionString, string? Name = null);
 }
