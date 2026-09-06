@@ -2,13 +2,19 @@ version: "3.8"
 
 services:
   netstone-mcp:
-    image: netstone-mcp
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: netstone-mcp:latest
     container_name: netstone-mcp-discord
+    restart: unless-stopped
     ports:
-      - "12345:80"
+      - "5000:5000"
     environment:
       - DOTNET_ENVIRONMENT=Production
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - DISCORD_BOT_KEY=${DISCORD_BOT_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-5.1}
       - TransportType=SSE
       - TRANSPORT_TYPE=SSE
+      - NETSTONE_SSE_URL=http://localhost:5000/sse

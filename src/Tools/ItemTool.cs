@@ -1,14 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
-using NetStone.Model.Parseables.CWLS;
 using NetStoneMCP.Model;
 using NetStoneMCP.Services;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace NetStoneMCP.Tools
@@ -20,37 +16,29 @@ namespace NetStoneMCP.Tools
         private readonly ILogger<ItemTool> _logger = logger;
 
         [McpServerTool(Name = "get_item_by_name", Title = "Get item by name")]
-        [Description("Fetch an item name using XIVAPI")]
-        public async Task<string> GetItemByName([Description("Item name.")] string name)
+        [Description("Search for FFXIV items by name using XIVAPI to find item IDs and English names.")]
+        public async Task<IEnumerable<ItemInformationDto>?> GetItemByName(
+            [Description("The item name (e.g. 'Potion', 'Excalibur').")] string name,
+            CancellationToken cancellationToken = default)
         {
-            var result = await _xivapiService.GetItemIdByNameAsync(name);
+            var result = await _xivapiService.GetItemIdByNameAsync(name, cancellationToken);
 
-            if (result is null || !result.Any())
-            {
-                return JsonSerializer.Serialize(new { error = "Item not found." });
-            }
+            if (result is null) return null;
 
-            var items = result.Select(r => new ItemInformationDto
+            return result.Select(r => new ItemInformationDto
             {
                 ItemId = r.RowId,
                 Name = r.Fields.Name
-            });
-
-            return JsonSerializer.Serialize(items);
+            }).ToList();
         }
 
-        [McpServerTool(Name = "get_item_recipes", Title = "Get item recipes")]
-        [Description("Retrieve all crafting recipes that produce the specified FFXIV item via XIVAPI v2. Input: itemId (int); returns recipe name, required job level and ingredient list.")]
-        public async Task<string> GetRecipesByItemId([Description("Item id.")] int id)
+        [McpServerTool(Name = "get_item_recipes", Title = "Get item crafting recipes")]
+        [Description("Retrieve all crafting recipes that produce the specified FFXIV item via XIVAPI v2 (returns recipe name, required job level, and ingredients).")]
+        public async Task<IEnumerable<XivapiRecipeResultDto>?> GetRecipesByItemId(
+            [Description("The FFXIV item ID (e.g. 4551 for Potion).")] int id,
+            CancellationToken cancellationToken = default)
         {
-            var result = await _xivapiService.GetRecipesByItemIdAsync(id);
-
-            if (result is null || !result.Any())
-            {
-                return JsonSerializer.Serialize(new { error = "recipes not found." });
-            }
-
-            return JsonSerializer.Serialize(result);
+            return await _xivapiService.GetRecipesByItemIdAsync(id, cancellationToken);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using NetStoneMCP.Model;
+using NetStoneMCP.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +11,11 @@ namespace NetStoneMCP.Dict
     {
         public static readonly Dictionary<int, string> MapDict = new()
         {
-            {339, "海都"},
-            {341, "沙都"},
-            {340, "森都"},
-            {979, "山都"},
-            {641, "白銀鄉"}
+            {339, "海霧村 (Mist)"},
+            {340, "薰衣草苗圃 (The Lavender Beds)"},
+            {341, "高腳孤丘 (The Goblet)"},
+            {641, "白銀鄉 (Shirogane)"},
+            {979, "穹頂鄉 (Empyreum)"}
         };
 
         public static readonly Dictionary<int, string> SizeDict = new()

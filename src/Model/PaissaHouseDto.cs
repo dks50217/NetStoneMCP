@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,11 +8,14 @@ namespace NetStoneMCP.Model
 {
     public class PaissaHouseDto
     {
+        public string? District { get; set; }
         public required string Area { get; set; }
         public required string Type { get; set; }
         public required string Size { get; set; }
         public required string Price { get; set; }
         public required DateTimeOffset LastUpdateTime { get; set; }
+        public int? LottoEntries { get; set; }
+        public int? LottoPhase { get; set; }
     }
 
     public class PaissaHouseModel

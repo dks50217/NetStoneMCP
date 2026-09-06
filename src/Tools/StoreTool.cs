@@ -1,15 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using NetStoneMCP.Model;
 using NetStoneMCP.Services;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Net.ServerSentEvents;
-using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace NetStoneMCP.Tools
 {
@@ -20,31 +15,33 @@ namespace NetStoneMCP.Tools
         private readonly ILogger<StoreTool> _logger = logger;
 
         [McpServerTool(Name = "get_store_categories", Title = "Get FFXIV store categories")]
-        [Description("Get FFXIV store categories")]
-        public async Task<IEnumerable<StoreCategory>?> GetStoreCategories()
+        [Description("Get all product categories available in the FFXIV Online Store.")]
+        public async Task<IEnumerable<StoreCategory>?> GetStoreCategories(CancellationToken cancellationToken = default)
         {
-            return await _storeService.GetStoreCategories();
+            return await _storeService.GetStoreCategories(cancellationToken);
         }
 
-        [McpServerTool(Name = "get_store_new_product", Title = "Get FFXIV store new product")]
-        [Description("Get FFXIV store new product")]
-        public async Task<StoreProductDto> GetStoreNewItem()
+        [McpServerTool(Name = "get_store_new_product", Title = "Get FFXIV store new products")]
+        [Description("Get newly released items and products in the FFXIV Online Store.")]
+        public async Task<StoreProductDto?> GetStoreNewItem(CancellationToken cancellationToken = default)
         {
-            return await _storeService.GetStoreNewItem();
+            return await _storeService.GetStoreNewItem(cancellationToken: cancellationToken);
         }
 
-        [McpServerTool(Name = "get_store_on_sale_product", Title = "Get FFXIV store on sale product")]
-        [Description("Get FFXIV store on sale product")]
-        public async Task<StoreProductDto> GetStoreOnSaleNewItem()
+        [McpServerTool(Name = "get_store_on_sale_product", Title = "Get FFXIV store on sale products")]
+        [Description("Get items and products currently on discount/sale in the FFXIV Online Store.")]
+        public async Task<StoreProductDto?> GetStoreOnSaleNewItem(CancellationToken cancellationToken = default)
         {
-            return await _storeService.GetStoreOnSaleItem();
+            return await _storeService.GetStoreOnSaleItem(cancellationToken: cancellationToken);
         }
 
-        [McpServerTool(Name = "get_store_product", Title = "Get FFXIV store product by category name")]
-        [Description("Get FFXIV store on product by category name")]
-        public async Task<StoreProductDto?> GetStoreProduct(string name)
+        [McpServerTool(Name = "get_store_product", Title = "Get FFXIV store products by category name")]
+        [Description("Get FFXIV Online Store products under a specific category (e.g. 'Mounts', 'Minions', 'Costumes').")]
+        public async Task<StoreProductDto?> GetStoreProduct(
+            [Description("The store category name (e.g. 'Mounts', 'Minions', 'Costumes').")] string name,
+            CancellationToken cancellationToken = default)
         {
-            return await _storeService.GetStoreProduct(name);
+            return await _storeService.GetStoreProduct(name, cancellationToken: cancellationToken);
         }
     }
 }

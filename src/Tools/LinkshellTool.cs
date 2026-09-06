@@ -1,14 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using NetStone.Model.Parseables.CWLS;
 using NetStone.Model.Parseables.Linkshell;
-using NetStone.Model.Parseables.Search.FreeCompany;
 using NetStoneMCP.Services;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NetStoneMCP.Tools
@@ -19,30 +14,30 @@ namespace NetStoneMCP.Tools
         private readonly INetStoneService _netStoneService = netStone;
         private readonly ILogger<LinkshellTool> _logger = logger;
 
-        [McpServerTool(Name = "get_crossworld_linkshell_information", Title = "Get crossworld linkshell information")]
-        [Description("Get crossworld linkshell information")]
+        [McpServerTool(Name = "get_crossworld_linkshell_information", Title = "Get Cross-World Linkshell information")]
+        [Description("Get FFXIV Cross-World Linkshell (CWLS) profile and member list by CWLS name and data center.")]
         public async Task<LodestoneCrossworldLinkshell?> GetCrossworldLinkshellInformation(
-        [Description("The cross world linkshell name.")] string name,
-        [Description("The data center (world).")] string world
-    )
+            [Description("The cross world linkshell name.")] string name,
+            [Description("The data center name (e.g. 'Elemental', 'Mana', 'Aether').")] string dataCenter,
+            CancellationToken cancellationToken = default
+        )
         {
-            var linkshell = await _netStoneService.GetCrossworldLinkshellId(name, world);
+            var linkshell = await _netStoneService.GetCrossworldLinkshellId(name, dataCenter);
 
             if (linkshell is null) return null;
 
             if (string.IsNullOrEmpty(linkshell.Id)) return null;
 
-            var linkshellInfo = await _netStoneService.GetCrossworldLinkshell(linkshell.Id);
-
-            return linkshellInfo;
+            return await _netStoneService.GetCrossworldLinkshell(linkshell.Id);
         }
 
-        [McpServerTool(Name = "get_linkshell_information", Title = "Get linkshell information")]
-        [Description("Get linkshell information")]
+        [McpServerTool(Name = "get_linkshell_information", Title = "Get Linkshell information")]
+        [Description("Get FFXIV Linkshell (LS) profile and member list by linkshell name and server / data center.")]
         public async Task<LodestoneLinkshell?> GetLinkshellInformation(
-    [Description("The linkshell name.")] string name,
-    [Description("The data center (world).")] string world
-)
+            [Description("The linkshell name.")] string name,
+            [Description("The world / server or data center name (e.g. 'Tonberry', 'Elemental').")] string world,
+            CancellationToken cancellationToken = default
+        )
         {
             var linkshell = await _netStoneService.GetLinkshellId(name, world);
 
@@ -50,9 +45,7 @@ namespace NetStoneMCP.Tools
 
             if (string.IsNullOrEmpty(linkshell.Id)) return null;
 
-            var linkshellInfo = await _netStoneService.GetLinkshell(linkshell.Id);
-
-            return linkshellInfo;
+            return await _netStoneService.GetLinkshell(linkshell.Id);
         }
     }
 }

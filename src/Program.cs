@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,20 +33,55 @@ else
 
 mcpBuilder.WithToolsFromAssembly();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddSingleton<INetStoneService, NetStoneService>();
-builder.Services.AddHttpClient<ICommonService, CommonService>();
-builder.Services.AddHttpClient<IPaissaHouseService, PaissaHouseService>();
-builder.Services.AddHttpClient<IStoreService, StoreService>();
-builder.Services.AddHttpClient<IXIVAPIService, XIVAPIService>();
-builder.Services.AddScoped<INoteService, NoteService>();
-builder.Services.AddHttpClient<ILodeStoneNewsService, LodeStoneNewsService>();
-builder.Services.AddHttpClient<IThaliakService, ThaliakService>();
+builder.Services.AddHttpClient<ICommonService, CommonService>(client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36");
+});
+builder.Services.AddHttpClient<IPaissaHouseService, PaissaHouseService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "NetStoneMCP/1.0 (https://github.com/dks50217/NetStoneMCP)");
+});
+builder.Services.AddHttpClient<IStoreService, StoreService>(client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36");
+});
+builder.Services.AddHttpClient<IXIVAPIService, XIVAPIService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "NetStoneMCP/1.0 (https://github.com/dks50217/NetStoneMCP)");
+});
+builder.Services.AddHttpClient<ILodeStoneNewsService, LodeStoneNewsService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "NetStoneMCP/1.0 (https://github.com/dks50217/NetStoneMCP)");
+});
+builder.Services.AddHttpClient<IThaliakService, ThaliakService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "NetStoneMCP/1.0 (https://github.com/dks50217/NetStoneMCP)");
+});
 builder.Services.AddScoped<ICustomService, CustomService>();
+builder.Services.AddHttpClient<IFFXIVCollectService, FFXIVCollectService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "NetStoneMCP/1.0 (https://github.com/dks50217/NetStoneMCP)");
+});
+builder.Services.AddHttpClient<IHuijiWikiService, HuijiWikiService>(client =>
+{
+    client.DefaultRequestHeaders.Add("User-Agent", "NetStoneMCP/1.0 (https://github.com/dks50217/NetStoneMCP)");
+});
 
 static async Task InitNetStone(IHost host)
 {
-    var netStoneService = host.Services.GetRequiredService<INetStoneService>();
-    await netStoneService.InitializeAsync();
+    try
+    {
+        var netStoneService = host.Services.GetRequiredService<INetStoneService>();
+        await netStoneService.InitializeAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = host.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning(ex, "Initial NetStoneService initialization failed. Subsequent requests may retry.");
+    }
 }
 
 var app = builder.Build();

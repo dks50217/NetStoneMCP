@@ -11,7 +11,7 @@ namespace NetStoneMCP.Tests.Services
         public void GetCharacterId_WithoutInitialize_Throws()
         {
             var service = new NetStoneService();
-            Assert.ThrowsAsync<Exception>(async () => await service.GetCharacterId("name", "world"));
+            Assert.ThrowsAsync<InvalidOperationException>(async () => await service.GetCharacterId("name", "world"));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using NetStone.Model.Parseables.FreeCompany.Members;
+using NetStone.Model.Parseables.FreeCompany.Members;
 using NetStone.Model.Parseables.Search.Character;
 using NetStone.Model.Parseables.Search.FreeCompany;
 using NetStone.Search.Character;
@@ -51,7 +51,7 @@ namespace NetStoneMCP.Services
         public async Task<CharacterSearchEntry?> GetCharacterId(string name, string? world)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var searchResponse = await _lodestoneClient.SearchCharacter(new CharacterSearchQuery()
             {
@@ -61,7 +61,7 @@ namespace NetStoneMCP.Services
 
             var lodestoneCharacter =
                 searchResponse?.Results
-                .FirstOrDefault(entry => entry.Name == name);
+                .FirstOrDefault(entry => string.Equals(entry.Name, name, StringComparison.OrdinalIgnoreCase));
 
             return lodestoneCharacter;
         }
@@ -69,7 +69,7 @@ namespace NetStoneMCP.Services
         public async Task<LodestoneCharacter?> GetCharacterInfo(string id)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var character = await _lodestoneClient.GetCharacter(id);
 
@@ -79,7 +79,7 @@ namespace NetStoneMCP.Services
         public async Task<FreeCompanySearchEntry?> GetFCInformation(string name, string world)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var searchResponse = await _lodestoneClient.SearchFreeCompany(new FreeCompanySearchQuery()
             {
@@ -87,7 +87,7 @@ namespace NetStoneMCP.Services
                 World = world
             });
 
-            var freeCompany = searchResponse?.Results.FirstOrDefault(entry => entry.Name == name);
+            var freeCompany = searchResponse?.Results.FirstOrDefault(entry => string.Equals(entry.Name, name, StringComparison.OrdinalIgnoreCase));
 
             return freeCompany;
         }
@@ -95,7 +95,7 @@ namespace NetStoneMCP.Services
         public async Task<IEnumerable<FreeCompanyMembersEntry>?> GetFCMembers(string id)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var searchResponse = await _lodestoneClient.GetFreeCompanyMembers(id: id);
 
@@ -107,7 +107,7 @@ namespace NetStoneMCP.Services
         public async Task<CharacterClassJob?> GetCharacterClassJob(string id)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var classJobResponse = await _lodestoneClient.GetCharacterClassJob(id: id);
 
@@ -117,7 +117,7 @@ namespace NetStoneMCP.Services
         public async Task<CrossworldLinkshellSearchEntry?> GetCrossworldLinkshellId(string name, string world)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var searchResponse = await _lodestoneClient.SearchCrossworldLinkshell(new CrossworldLinkshellSearchQuery()
             {
@@ -127,7 +127,7 @@ namespace NetStoneMCP.Services
 
             var crossworldLinkshell =
                searchResponse?.Results
-               .FirstOrDefault(entry => entry.Name == name);
+               .FirstOrDefault(entry => string.Equals(entry.Name, name, StringComparison.OrdinalIgnoreCase));
 
             return crossworldLinkshell;
         }
@@ -135,7 +135,7 @@ namespace NetStoneMCP.Services
         public async Task<LodestoneCrossworldLinkshell?> GetCrossworldLinkshell(string id)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var result = await _lodestoneClient.GetCrossworldLinkshell(id: id);
 
@@ -145,7 +145,7 @@ namespace NetStoneMCP.Services
         public async Task<LinkshellSearchEntry?> GetLinkshellId(string name, string world)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var searchResponse = await _lodestoneClient.SearchLinkshell(new LinkshellSearchQuery()
             {
@@ -155,7 +155,7 @@ namespace NetStoneMCP.Services
 
             var linkshell =
                searchResponse?.Results
-               .FirstOrDefault(entry => entry.Name == name);
+               .FirstOrDefault(entry => string.Equals(entry.Name, name, StringComparison.OrdinalIgnoreCase));
 
             return linkshell;
         }
@@ -163,7 +163,7 @@ namespace NetStoneMCP.Services
         public async Task<LodestoneLinkshell?> GetLinkshell(string id)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var result = await _lodestoneClient.GetLinkshell(id: id);
 
@@ -173,7 +173,7 @@ namespace NetStoneMCP.Services
         public async Task<CharacterCollectable?> GetCharacterMount(string id)
         {
             if (_lodestoneClient == null)
-                throw new Exception("LodestoneClient initialization failed.");
+                throw new InvalidOperationException("LodestoneClient is not initialized. Call InitializeAsync() first.");
 
             var result = await _lodestoneClient.GetCharacterMount(id);
 

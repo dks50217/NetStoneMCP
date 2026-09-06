@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
+using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 using NetStone.Model.Parseables.Character;
 using NetStone.Model.Parseables.Character.ClassJob;
@@ -22,11 +21,12 @@ namespace NetStoneMCP.Tools
         private readonly INetStoneService _netStoneService = netStone;
         private readonly ILogger<CharacterInformationTool> _logger = logger;
 
-        [McpServerTool(Name = "get_player_info", Title = "Get a character information")]
-        [Description("Get a character by its Lodestone ID.")]
+        [McpServerTool(Name = "get_player_info", Title = "Get character profile information")]
+        [Description("Get FFXIV character profile details (level, avatar, grand company, free company, bio) by character name and world/server.")]
         public async Task<CharacterDto?> GetCharacterInformation(
-          [Description("The character name.")] string name,
-          [Description("The data center (world).")] string? world
+          [Description("The character name (e.g. 'Tataru Taru').")] string name,
+          [Description("The world / server name (e.g. 'Carbuncle', 'Tonberry').")] string? world,
+          CancellationToken cancellationToken = default
       )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
@@ -40,42 +40,32 @@ namespace NetStoneMCP.Tools
             if (characterInfo is null) return null;
 
             var raceformat = string.Empty;
+            string? clanFormat = null;
 
-            if (FFXIVRacesDict.Races.ContainsKey(characterInfo.Race))
+            if (FFXIVRacesDict.Races.TryGetValue(characterInfo.Race, out var raceInfo))
             {
-                raceformat = FFXIVRacesDict.Races[characterInfo.Race].ChineseName;
+                raceformat = raceInfo.ChineseName;
+                if (!string.IsNullOrEmpty(characterInfo.Tribe) && raceInfo.Clans.TryGetValue(characterInfo.Tribe, out var clan))
+                {
+                    clanFormat = clan;
+                }
             }
 
             return new CharacterDto()
             {
                 Character = characterInfo,
-                Race = raceformat
+                Race = raceformat,
+                Clan = clanFormat
             };
         }
 
-        public async Task<LodestoneCharacter?> GetCharacterRace(
-       [Description("The character name.")] string name,
-       [Description("The data center (world).")] string? world
-    )
-        {
-            var character = await _netStoneService.GetCharacterId(name, world);
-
-            if (character is null) return null;
-
-            if (string.IsNullOrEmpty(character.Id)) return null;
-
-            var characterInfo = await _netStoneService.GetCharacterInfo(character.Id);
-
-            return characterInfo;
-        }
-
-
-        [McpServerTool(Name = "get_player_class_job", Title = "Get a characters' classjob")]
-        [Description("Get a characters' classjob information by its Lodestone ID")]
+        [McpServerTool(Name = "get_player_class_job", Title = "Get character class/job levels")]
+        [Description("Get all class and job levels of an FFXIV character by character name and world/server.")]
         public async Task<CharacterClassJob?> GetCharacterClassJob(
-        [Description("The character name.")] string name,
-        [Description("The data center (world).")] string? world
-    )
+            [Description("The character name (e.g. 'Tataru Taru').")] string name,
+            [Description("The world / server name (e.g. 'Carbuncle', 'Tonberry').")] string? world,
+            CancellationToken cancellationToken = default
+        )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
 
@@ -89,11 +79,12 @@ namespace NetStoneMCP.Tools
         }
 
         [McpServerTool(Name = "get_character_mount_count", Title = "Get character mount count")]
-        [Description("Get character mount count")]
+        [Description("Get total mount count of an FFXIV character by character name and world/server.")]
         public async Task<CharacterMountDto?> GetCharacterMountCount(
-        [Description("The character name.")] string name,
-        [Description("The data center (world).")] string? world
-    )
+            [Description("The character name (e.g. 'Tataru Taru').")] string name,
+            [Description("The world / server name (e.g. 'Carbuncle', 'Tonberry').")] string? world,
+            CancellationToken cancellationToken = default
+        )
         {
             var character = await _netStoneService.GetCharacterId(name, world);
 
