@@ -27,7 +27,7 @@ namespace NetStoneMCP.Tests.Services
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             });
             var client = new HttpClient(handler);
-            var service = new CommonService(client);
+            var service = new CommonService(client, Microsoft.Extensions.Logging.Abstractions.NullLogger<CommonService>.Instance);
 
             var result = await service.GetWorlds();
 

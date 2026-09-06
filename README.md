@@ -19,6 +19,7 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
 * [XIVAPI](https://github.com/xivapi)
 * [FFXIV Lodestone News](https://lodestonenews.com/)
 * [Thaliak](https://thaliak.xiv.dev/)
+* [FFXIV Collect](https://ffxivcollect.com/)
 
 ## Setup
 
@@ -60,6 +61,40 @@ This project transforms FFXIV Lodestone API library NetStone, along with other e
 - [x] House list — List all purchasable houses.
 - [x] Store list — List store categories. 
 - [x] search for products by specifying a category name.
+- [x] Collectibles search — Query mounts, minions, emotes, hairstyles, orchestrions, blue mage spells, bardings, fashions, and achievements via FFXIV Collect.
+
+## Example Prompts
+
+Once connected to your MCP client (Claude Desktop, Discord Bot, or custom UI), you can interact with NetStoneMCP using natural language:
+
+### Collectibles & Glamour (FFXIV Collect)
+* *"How can I get the Fatter Cat mount? How many seats does it have?"*
+* *"Where does the Major-General shark minion drop?"*
+* *"What is the command for the Savor Tea emote, and how do I unlock it?"*
+* *"Where can I learn the Blue Mage spell 'Moon Flute'?"*
+* *"How do I unlock the Practical Ponytails hairstyle?"*
+* *"What title reward do you get from the 'Pal-less Palace III' achievement?"*
+* *"How do I get the Neath Dark Waters orchestrion roll?"*
+
+### Characters & Free Companies (Lodestone & NetStone)
+* *"Look up the character 'Tataru Taru' on world 'Carbuncle' and show their class/job levels."*
+* *"Search for the Free Company 'Chocobo' on 'Bahamut' and list its members."*
+* *"How many mounts does the character have?"*
+
+### Housing & Servers (PaissaHouse & Server Status)
+* *"Are there any available houses to buy on Tonberry world in Elemental data center?"*
+* *"What is the character creation availability status for Traditional Chinese servers?"*
+* *"List all data centers and worlds."*
+
+### News, Maintenance & Versions (Lodestone News & Thaliak)
+* *"Is there any ongoing or upcoming FFXIV server maintenance?"*
+* *"Summarize the latest topics and news from the Lodestone website."*
+* *"What are the latest game version numbers for FFXIV and its expansions?"*
+* *"Get the latest community Traditional Chinese localization patch release."*
+
+### Online Store
+* *"What items are currently on sale in the FFXIV Online Store?"*
+* *"Show me the newest products added to the store."*
 
 ## Quick Setup - Docker for Discord Bot
 

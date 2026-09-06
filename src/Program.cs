@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +42,7 @@ builder.Services.AddScoped<INoteService, NoteService>();
 builder.Services.AddHttpClient<ILodeStoneNewsService, LodeStoneNewsService>();
 builder.Services.AddHttpClient<IThaliakService, ThaliakService>();
 builder.Services.AddScoped<ICustomService, CustomService>();
+builder.Services.AddHttpClient<IFFXIVCollectService, FFXIVCollectService>();
 
 static async Task InitNetStone(IHost host)
 {
