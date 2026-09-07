@@ -101,10 +101,10 @@ docker compose up -d --build
 | `get_ffxiv_achievement` | Achievement points, requirements, and rewards (titles, mounts, items). |
 | `search_ffxiv_collectable` | Multi-category collectible query across all collectible types. |
 
-### Lore & Wiki Database (Huiji Wiki / 灰机Wiki)
+### Lore & Wiki Database (Huiji Wiki / 灰機Wiki / 灰机Wiki)
 | Tool | Description |
 |---|---|
-| `search_huiji_wiki` | Search Chinese FFXIV database for quests, dungeons, lore, NPCs, and mechanics. |
+| `search_huiji_wiki` | Search Chinese FFXIV database for quests, dungeons, lore, NPCs, and mechanics. Supports natural language queries (e.g. "幫我用灰機查..."). |
 | `get_huiji_wiki_summary` | Get a concise summary and introduction for a topic or page. |
 | `get_huiji_wiki_page_section` | Fetch full section content (e.g. strategy guides, background lore, drop lists). |
 
@@ -129,7 +129,7 @@ docker compose up -d --build
 | `ffxiv_get_topics` | Latest official news and topics from the Lodestone. |
 | `ffxiv_get_post` | Full text content for a specific Lodestone post by ID. |
 | `get_ffxiv_latest_versions` | Latest patch version strings for base game and expansions (boot, ex1–ex5). |
-| `get_ffxiv_latest_chn_text_patch` | Latest community Traditional Chinese localization release download link. |
+| `get_ffxiv_latest_chn_text_patch` | Latest community Chinese localization patch (漢化 / 中文化補丁) release and download link. |
 | `get_store_categories` | Available product categories in the FFXIV Online Store. |
 | `get_store_new_product` | Newly added items in the Online Store. |
 | `get_store_on_sale_product` | Items currently discounted in the Online Store. |
@@ -143,6 +143,12 @@ Ready-to-use sample clients are available under the [`sample/`](./sample/) direc
 
 ### 1. Discord Bot (`sample/NetStoneDiscordBot`)
 A Discord bot powered by OpenAI Function Calling and NetStoneMCP tools with channel context memory.
+
+#### Interactive Option Clarification (Claude Code Style)
+When a user prompt is ambiguous or has multiple possible targets (e.g. asking *"查巴哈"* which could mean Bahamut world server, the Binding Coil raid, or primal lore), the AI invokes the `ask_user_options` tool to present interactive Discord buttons. The user simply clicks an option to proceed with the exact query without any guesswork.
+
+#### Channel Memory & Extension
+Maintains independent conversation context per Discord channel. When the memory is set to expire within 10 minutes, an interactive **`延長記憶 10 分鐘`** button appears, allowing users to extend session duration up to 1 hour.
 
 #### Roleplay Persona Switching (`!skill`)
 Switch character personas at any time in chat. Personas are defined as Markdown templates under `sample/NetStoneDiscordBot/Skills/`:

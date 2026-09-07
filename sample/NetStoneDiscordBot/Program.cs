@@ -21,6 +21,9 @@ IChatClient chatClient;
 // 每個頻道各自一份對話記憶（避免跨頻道串話），存取前先鎖住該份的 Lock
 var conversations = new System.Collections.Concurrent.ConcurrentDictionary<ulong, (List<Microsoft.Extensions.AI.ChatMessage> Messages, object Lock)>();
 
+// 待點擊的選項按鈕：ButtonId -> (ChannelId, UserId, OptionText, CreatedAt)
+var pendingOptionButtons = new System.Collections.Concurrent.ConcurrentDictionary<string, (ulong ChannelId, ulong UserId, string OptionText, DateTime CreatedAt)>();
+
 DateTime nextResetUtc = default;
 
 // MCP
@@ -221,56 +224,7 @@ client.MessageReceived += async rawMessage =>
         }
     }
 
-    // 丟給模型：取該頻道記憶，鎖住加入使用者訊息並快照（快照給串流用，避免邊讀邊改）
-    var convo = GetConversation(message.Channel.Id);
-    List<Microsoft.Extensions.AI.ChatMessage> snapshot;
-    lock (convo.Lock)
-    {
-        convo.Messages.Add(new(ChatRole.User, contents));
-        snapshot = convo.Messages.ToList();
-    }
-
-    await message.Channel.TriggerTypingAsync();
-
-    // 讓猴子可以對「觸發這則對話的訊息」按 emoji 反應
-    var reactTool = AIFunctionFactory.Create(
-        async (string emoji) =>
-        {
-            try { await message.AddReactionAsync(new Emoji(emoji)); return $"已按下 {emoji}"; }
-            catch { return $"這個表情按不了：{emoji}"; }
-        },
-        name: "react_to_message",
-        description: roleplayService.GetReactionToolDescription());
-
-    await foreach (var update in chatClient.GetStreamingResponseAsync(snapshot, new() { Tools = [.. tools, reactTool] }))
-    {
-        responseMessage.Append(update.Text);
-    }
-
-    lock (convo.Lock)
-        convo.Messages.Add(new(ChatRole.Assistant, responseMessage.ToString()));
-
-    var forgetRemind = roleplayService.BuildForgetRemind(nextResetUtc);
-
-    // 算距離清空還剩多久（UTC）
-    var remaining = nextResetUtc == default ? TimeSpan.Zero : (nextResetUtc - DateTime.UtcNow);
-    if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
-
-    // 少於 10 分鐘才顯示延長按鈕
-    MessageComponent? components = null;
-
-    if (remaining < TimeSpan.FromMinutes(10))
-    {
-        components = new ComponentBuilder()
-            .WithButton(
-                label: "延長記憶 10 分鐘",
-                customId: "extend_memory_10",
-                style: ButtonStyle.Primary
-            )
-            .Build();
-    }
-
-    await SendLongMessageAsync(message.Channel, responseMessage.ToString() + forgetRemind, components);
+    await ProcessAiTurnAsync(message.Channel, message.Author, contents, message);
 };
 
 // 處理按鈕互動（延長記憶）
@@ -372,6 +326,132 @@ void StartResetLoop()
     });
 }
 
+// 統一處理 AI 對話輪次與選項按鈕生成
+async Task ProcessAiTurnAsync(
+    IMessageChannel channel,
+    IUser user,
+    List<AIContent> contents,
+    IUserMessage? triggerMessage = null)
+{
+    var convo = GetConversation(channel.Id);
+    List<Microsoft.Extensions.AI.ChatMessage> snapshot;
+    lock (convo.Lock)
+    {
+        convo.Messages.Add(new(ChatRole.User, contents));
+        snapshot = convo.Messages.ToList();
+    }
+
+    await channel.TriggerTypingAsync();
+
+    // 收集 AI 產生的選項（若有）
+    var optionButtons = new List<string>();
+
+    var clarifyTool = AIFunctionFactory.Create(
+        (string question, string[] options) =>
+        {
+            optionButtons.Clear();
+            if (options != null)
+            {
+                foreach (var opt in options)
+                {
+                    if (!string.IsNullOrWhiteSpace(opt))
+                        optionButtons.Add(opt.Trim());
+                }
+            }
+            return $"已向使用者展示選項按鈕：{string.Join("、", optionButtons)}。請簡短說明並引導使用者在下方點選按鈕進行確認。";
+        },
+        name: "ask_user_options",
+        description: "當使用者的問題模糊不清、缺乏關鍵細節、有多個可能意思（例如：只說「查巴哈」，無法確定是要查巴哈伺服器、巴哈大迷宮副本還是蠻神設定），或者有多個候選項時調用此工具。請提供 2 到 5 個明確的選項讓使用者點選確認。");
+
+    var currentTools = new List<AITool>(tools) { clarifyTool };
+    if (triggerMessage != null)
+    {
+        var reactTool = AIFunctionFactory.Create(
+            async (string emoji) =>
+            {
+                try { await triggerMessage.AddReactionAsync(new Emoji(emoji)); return $"已按下 {emoji}"; }
+                catch { return $"這個表情按不了：{emoji}"; }
+            },
+            name: "react_to_message",
+            description: roleplayService.GetReactionToolDescription());
+        currentTools.Add(reactTool);
+    }
+
+    var responseMessage = new StringBuilder();
+    await foreach (var update in chatClient.GetStreamingResponseAsync(snapshot, new() { Tools = currentTools }))
+    {
+        responseMessage.Append(update.Text);
+    }
+
+    string fullResponse = responseMessage.ToString();
+
+    // 支援以文字 [OPTION:選項文字] 輸出的 Fallback 解析
+    var tagMatches = System.Text.RegularExpressions.Regex.Matches(fullResponse, @"\[OPTION:\s*(.+?)\s*\]", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    if (tagMatches.Count > 0)
+    {
+        foreach (System.Text.RegularExpressions.Match match in tagMatches)
+        {
+            var optText = match.Groups[1].Value.Trim();
+            if (!string.IsNullOrEmpty(optText) && !optionButtons.Contains(optText))
+            {
+                optionButtons.Add(optText);
+            }
+        }
+        fullResponse = System.Text.RegularExpressions.Regex.Replace(fullResponse, @"\[OPTION:\s*(.+?)\s*\]\r?\n?", "").Trim();
+    }
+
+    lock (convo.Lock)
+        convo.Messages.Add(new(ChatRole.Assistant, fullResponse));
+
+    var forgetRemind = roleplayService.BuildForgetRemind(nextResetUtc);
+
+    // 算距離清空還剩多久（UTC）
+    var remaining = nextResetUtc == default ? TimeSpan.Zero : (nextResetUtc - DateTime.UtcNow);
+    if (remaining < TimeSpan.Zero) remaining = TimeSpan.Zero;
+
+    var compBuilder = new ComponentBuilder();
+    int currentTotalButtons = 0;
+
+    // 清理 30 分鐘前過期的按鈕快取
+    if (pendingOptionButtons.Count > 100)
+    {
+        var cutoff = DateTime.UtcNow.AddMinutes(-30);
+        foreach (var k in pendingOptionButtons.Where(kv => kv.Value.CreatedAt < cutoff).Select(kv => kv.Key).ToList())
+            pendingOptionButtons.TryRemove(k, out _);
+    }
+
+    // 若有選項，加入選項按鈕（每行最多 5 個按鈕）
+    if (optionButtons.Count > 0)
+    {
+        for (int i = 0; i < optionButtons.Count && i < 10; i++)
+        {
+            var opt = optionButtons[i];
+            var btnId = $"opt_{Guid.NewGuid():N}";
+            pendingOptionButtons[btnId] = (channel.Id, user.Id, opt, DateTime.UtcNow);
+            var label = opt.Length > 80 ? opt[..77] + "..." : opt;
+            compBuilder.WithButton(label, btnId, ButtonStyle.Primary, row: i / 5);
+            currentTotalButtons++;
+        }
+    }
+
+    // 少於 10 分鐘才顯示延長按鈕
+    if (remaining < TimeSpan.FromMinutes(10))
+    {
+        int extRow = (currentTotalButtons > 0) ? (optionButtons.Count + 4) / 5 : 0;
+        compBuilder.WithButton(
+            label: "延長記憶 10 分鐘",
+            customId: "extend_memory_10",
+            style: ButtonStyle.Secondary,
+            row: extRow
+        );
+        currentTotalButtons++;
+    }
+
+    MessageComponent? components = currentTotalButtons > 0 ? compBuilder.Build() : null;
+
+    await SendLongMessageAsync(channel, fullResponse + forgetRemind, components);
+}
+
 // Discord 單則上限 2000 字，超過就切段送；按鈕只掛在最後一段
 async Task SendLongMessageAsync(IMessageChannel channel, string text, MessageComponent? components = null)
 {
@@ -393,7 +473,10 @@ void InitSystemMessages(List<Microsoft.Extensions.AI.ChatMessage> messages)
     messages.Add(new(ChatRole.System, "'公司' 一律解釋為 '公會'。"));
     messages.Add(new(ChatRole.System, "'Link shell' 一律翻譯為 '通訊貝'。"));
     messages.Add(new(ChatRole.System, "當內容涉及「漢化」或「中文化」時，禁止調用商店工具。"));
-    messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。"));
+    messages.Add(new(ChatRole.System, "「中文化」視為「漢化」的同義詞。當使用者詢問「漢化」、「最新的漢化」、「FFXIV漢化」、「中文化」或補丁下載時，請務必調用 get_ffxiv_latest_chn_text_patch 工具獲取最新版本與下載連結。"));
+    messages.Add(new(ChatRole.System, "「灰機」即為「灰機Wiki」(Huiji Wiki)。當使用者提到「用灰機查」、「查灰機」或需要查詢 FF14 設定、攻略、任務、NPC 等維基資料時，請調用 search_huiji_wiki 或相關灰機工具進行查詢。"));
+    messages.Add(new(ChatRole.System,
+        "【重要互動規則】當使用者的問題模稜兩可、有多種可能的查詢方向（例如只說「查巴哈」，無法確定是要查巴哈伺服器、巴哈大迷宮副本還是蠻神設定），或者有多個同名候選項時，切勿直接自行猜測回答！請務必調用 ask_user_options 工具（或輸出 [OPTION:選項名稱]），提供 2 到 5 個明確具體的選項按鈕供使用者點選確認。"));
     var personaPrompt = roleplayService.GetSystemPrompt();
     if (!string.IsNullOrWhiteSpace(personaPrompt))
     {
@@ -422,7 +505,34 @@ static string GuessImageMediaType(string? contentTypeFromDiscord, string url)
 
 async Task OnButtonExecuted(SocketMessageComponent component)
 {
-    // 延長記憶用
+    // ① 檢查是否為 AI 選項按鈕
+    if (pendingOptionButtons.TryRemove(component.Data.CustomId, out var optData))
+    {
+        if (optData.UserId != 0 && component.User.Id != optData.UserId)
+        {
+            await component.RespondAsync("這是其他玩家的選擇題喔，請親自發問！", ephemeral: true);
+            pendingOptionButtons[component.Data.CustomId] = optData;
+            return;
+        }
+
+        // 更新原訊息，移除按鈕並標記使用者的選擇
+        await component.UpdateAsync(msg =>
+        {
+            msg.Content = $"{msg.Content}\n\n👉 **{component.User.Username}** 選擇了：`{optData.OptionText}`";
+            msg.Components = new ComponentBuilder().Build();
+        });
+
+        // 觸發 AI 回應此選項
+        var nextContents = new List<AIContent>
+        {
+            new TextContent($"<user_input>我選擇了：{optData.OptionText}</user_input>")
+        };
+
+        await ProcessAiTurnAsync(component.Channel, component.User, nextContents, null);
+        return;
+    }
+
+    // ② 延長記憶用
     if (component.Data.CustomId == "extend_memory_10")
     {
         var extend = TimeSpan.FromMinutes(10);

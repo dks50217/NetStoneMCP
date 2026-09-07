@@ -73,9 +73,9 @@ namespace NetStoneMCP.Tools
 
         [McpServerTool(
             Name = "get_ffxiv_latest_chn_text_patch",
-            Title = "Get Latest FFXIV Chinese Patch Download Link"
+            Title = "Get Latest FFXIV Chinese Patch Download Link (獲取最新FFXIV漢化/中文化補丁下載連結)"
         )]
-        [Description("Retrieve the latest Final Fantasy XIV (FFXIV) community Chinese localization patch download link for installing the game’s Chinese language support.")]
+        [Description("取得 Final Fantasy XIV (FFXIV/FF14) 社群繁體/簡體中文化漢化補丁 (Chinese Localization Text Patch) 的最新版本資訊與 GitHub 下載連結。當使用者詢問「最新的漢化」、「FFXIV漢化」、「FF14漢化」、「漢化」、「漢化包」、「中文化補丁」、「繁中補丁」時，必須調用此工具。")]
         public async Task<GithubReleaseDto?> GetFFXIVChnTextPatchLastReleaseAsync(CancellationToken cancellationToken = default)
         {
             return await _customService.GetGithubLastReleaseAsync(cancellationToken);

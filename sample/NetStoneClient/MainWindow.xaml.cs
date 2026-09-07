@@ -80,6 +80,8 @@ namespace NetStoneClient
             _messages.Add(new(ChatRole.System, "請使用繁體中文回答所有問題。"));
             _messages.Add(new(ChatRole.System, "公司是指公會。"));
             _messages.Add(new(ChatRole.System, "Link shell是指通訊貝。"));
+            _messages.Add(new(ChatRole.System, "「灰機」是指「灰機Wiki」(Huiji Wiki)。當使用者提到「用灰機查」、「查灰機」或查詢 FF14 相關攻略、設定、任務等資料時，請調用 search_huiji_wiki 等灰機工具。"));
+            _messages.Add(new(ChatRole.System, "當使用者詢問「漢化」、「最新的漢化」、「FFXIV漢化」、「中文化」或補丁下載時，請調用 get_ffxiv_latest_chn_text_patch 工具獲取最新版本與下載連結。"));
 
             AddUIMessage(ChatRole.System, "歡迎使用本工具！這是一個結合 NetStone 的自然語言 MCP 伺服器，可用來查詢《Final Fantasy XIV》的角色與世界資料。");
         }
