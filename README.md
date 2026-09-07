@@ -144,7 +144,7 @@ Ready-to-use sample clients are available under the [`sample/`](./sample/) direc
 ### 1. Discord Bot (`sample/NetStoneDiscordBot`)
 A Discord bot powered by OpenAI Function Calling and NetStoneMCP tools with channel context memory.
 
-#### Interactive Option Clarification (Claude Code Style)
+#### Interactive Option Clarification
 When a user prompt is ambiguous or has multiple possible targets (e.g. asking *"查巴哈"* which could mean Bahamut world server, the Binding Coil raid, or primal lore), the AI invokes the `ask_user_options` tool to present interactive Discord buttons. The user simply clicks an option to proceed with the exact query without any guesswork.
 
 #### Channel Memory & Extension
@@ -182,6 +182,11 @@ A desktop chat application built with WPF, integrating OpenAI chat completions w
 ---
 
 ## Screenshots
+
+<p align="center">
+  <img src="./docs/sample6.png" alt="Discord Bot Interactive Option Buttons" width="720"/>
+  <br/><em>Discord Bot interactive clarification buttons for ambiguous queries</em>
+</p>
 
 <p align="center">
   <img src="./docs/sample5.png" alt="Claude Desktop Integration" width="720"/>
