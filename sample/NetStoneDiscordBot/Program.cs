@@ -15,7 +15,7 @@ using System.Threading;
 
 string apiKey = "";
 string botKey = "";
-string model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.1";
+string model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.6-sol";
 
 IChatClient chatClient;
 // 每個頻道各自一份對話記憶（避免跨頻道串話），存取前先鎖住該份的 Lock

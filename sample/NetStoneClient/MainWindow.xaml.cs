@@ -24,7 +24,7 @@ namespace NetStoneClient
     public partial class MainWindow : Window
     {
         private string _apiKey = "";
-        private string _model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.1";
+        private string _model = Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5.6-sol";
         private IChatClient? _chatClient;
         private List<Microsoft.Extensions.AI.ChatMessage> _messages = new List<Microsoft.Extensions.AI.ChatMessage>();
         private IList<McpClientTool>? _tools;
